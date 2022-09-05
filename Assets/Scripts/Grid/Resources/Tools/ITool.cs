@@ -5,6 +5,6 @@ namespace Tools
 {
     public interface ITool
     {
-        void UseTool(GameObject gameObj, Type type, GameObject[] resourceMarker = null);
+        void UseTool(GameObject gameObj, Type type);
     }
 }

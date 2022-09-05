@@ -17,7 +17,7 @@ namespace ResourceTypes
         }
         public ResourceGatherStates ResourceGatherState { get; private set; }
         public int ResourceQuantity = 0;
-
+        [SerializeField] private GameObject resourceMarker;
         private void Start()
         {
             ChangeGatheredState(ResourceGatherStates.NotGathered);
@@ -52,7 +52,11 @@ namespace ResourceTypes
             {
                 grid.SetNodeWalkability(position.x, position.z, true);
             }
+        }
 
+        public void ShowResourceMarker()
+        {
+            resourceMarker.SetActive(true);
         }
     }
 }

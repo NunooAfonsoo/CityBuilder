@@ -22,7 +22,7 @@ namespace Population
         public override Result Run()
         {
             //PLAY ANIMATION
-            if (timeSinceStart < 5)
+            if (timeSinceStart < 5 && resource != null)
             {
                 person.transform.LookAt(resource.transform);
                 timeSinceStart += Time.deltaTime;
@@ -31,7 +31,7 @@ namespace Population
             // //
             else
             {
-                Resource nextResource = ChooseNewResource();
+                Resource nextResource = ResourceGatheringManager.Instance.GetNextResourceToHarvest();
                 if(nextResource != null)
                 {
                     float radianAngle = Random.Range(0f, 2 * Mathf.PI);
@@ -52,21 +52,5 @@ namespace Population
                 return Result.Success;
             }
         }
-
-        private Resource ChooseNewResource()
-        {
-            ResourceGatheringManager resourseGatheringManager = ResourceGatheringManager.Instance;
-            switch (resourseGatheringManager.ResourceGettingHarvested)
-            {
-                case 0:
-                    ResourceTypes.Tree newTree = (ResourceTypes.Tree)resourseGatheringManager.ChooseRadomResource(typeof(ResourceTypes.Tree));
-                    return newTree;
-                case 1:
-                    Stone newStone = (Stone)resourseGatheringManager.ChooseRadomResource(typeof(Stone));
-                    return newStone;
-            }
-            return null;
-        }
-
     }
 }
