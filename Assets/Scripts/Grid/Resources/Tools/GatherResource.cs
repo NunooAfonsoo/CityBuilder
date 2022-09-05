@@ -12,26 +12,30 @@ namespace Tools
             resourceGatheringManager = ResourceGatheringManager.Instance;
         }
 
-        public void UseTool(GameObject resource, Type type, GameObject[] resourceMarker = null)
+        public void UseTool(GameObject resource, Type type)
         {
             if (resource != null)
             {
                 if (resource.TryGetComponent(out ResourceTypes.Tree resourceTree) && type == typeof(ResourceTypes.Tree))
                 {
-                    if(!resourceGatheringManager.TreesToBeGathered.Contains(resourceTree))
+                    if(!resourceGatheringManager.ResourcesToBeGathered.Contains(resourceTree))
                     {
-                        GameObject marker = GameObject.Instantiate(resourceMarker[0], resource.transform.position + new Vector3(0, 3f, 0), Quaternion.identity, resource.transform);
+                        resourceTree.ShowResourceMarker();
                     }
-                    resourceGatheringManager.RegisterTree(resourceTree);
+
+
+                    //resourceGatheringManager.RegisterTree(resourceTree);
+                    resourceGatheringManager.RegisterResource(resourceTree);
                 }
                 else if (resource.TryGetComponent(out Stone resourceStone) && type == typeof(Stone))
                 {
-                    if (!resourceGatheringManager.StonesToBeGathered.Contains(resourceStone))
+                    if (!resourceGatheringManager.ResourcesToBeGathered.Contains(resourceStone))
                     {
-                        GameObject marker = GameObject.Instantiate(resourceMarker[1], resource.transform.position + new Vector3(0, 1.2f, 0), Quaternion.identity, resource.transform);
+                        resourceStone.ShowResourceMarker();
                     }
 
-                    resourceGatheringManager.RegisterStone(resourceStone);
+                    //resourceGatheringManager.RegisterStone(resourceStone);
+                    resourceGatheringManager.RegisterResource(resourceStone);
                 }
             }
         }

@@ -62,16 +62,9 @@ namespace Population
 
         public void NewGatherResourceBT(Resource resource)
         {
-            if(ResourceGatheringManager.Instance.IsResourceBeingGathered(resource))
-            {
-                float radianAngle = Random.Range(0f, 2 * Mathf.PI);
-                Vector3 gatherPosition = resource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
-                currentBehaviourTree = new GatherResource(this, aiDestinationSetter, gatherPosition, aiPath, resource);
-            }
-            else
-            {
-                ResourceGatheringManager.Instance.ClearAllHashSets();
-            }
+            float radianAngle = Random.Range(0f, 2 * Mathf.PI);
+            Vector3 gatherPosition = resource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
+            currentBehaviourTree = new GatherResource(this, aiDestinationSetter, gatherPosition, aiPath, resource);
         }
         #endregion
 

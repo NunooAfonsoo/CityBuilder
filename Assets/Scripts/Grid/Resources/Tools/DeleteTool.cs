@@ -7,7 +7,7 @@ namespace Tools
     {
         public DeleteTool() { }
 
-        public void UseTool(GameObject building, Type type = null, GameObject[] resourceMarker = null)
+        public void UseTool(GameObject building, Type type = null)
         {
             if (building != null) UnityEngine.Object.Destroy(building);
         }

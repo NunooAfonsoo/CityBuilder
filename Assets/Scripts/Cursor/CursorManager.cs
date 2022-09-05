@@ -21,7 +21,6 @@ namespace Cursor
         [SerializeField] private RectTransform cursorMarker;
         public Vector3Int CurrentMouseGridPosition{ get; private set; }
         private float nodeOffset;
-        private Vector3Int draggingNewMousePosition;
         private bool dragging;
         private HashSet<Vector2Int> nodesSelected;
 
@@ -31,7 +30,6 @@ namespace Cursor
         private Image cursorMarkerImage;
         private GatherResourcesTool gatherResourcesTool;
         private Resource resourceToGather;
-        [SerializeField] GameObject[] resourceMarkers;
 
         //Controls NewInputSystem
         private Controls controls;
@@ -137,7 +135,7 @@ namespace Cursor
                 Node node = Grid.Grid.Instance.GetCell(CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
 
                 deleteTool?.UseTool(node.Building);
-                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType(), resourceMarkers);
+                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType());
                 GatherResource();
             }
 
@@ -163,9 +161,6 @@ namespace Cursor
                 {
                     CurrentMouseGridPosition = mousePosition;
                     cursorMarker.position = new Vector3(CurrentMouseGridPosition.x - nodeOffset, cursorMarker.position.y, CurrentMouseGridPosition.z - nodeOffset);
-                    //Vector3 positionToMoveTo = new Vector3(CurrentMouseGridPosition.x, cursorMarker.position.y, CurrentMouseGridPosition.z);
-                    //cursorMarker.position = Vector3.MoveTowards(cursorMarker.position, positionToMoveTo, 350 * Time.deltaTime);
-
                 }
             }
 
@@ -183,7 +178,7 @@ namespace Cursor
                 Node node = Grid.Grid.Instance.GetCell(nodePosition.x, nodePosition.y);
 
                 deleteTool?.UseTool(node.Building);
-                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType(), resourceMarkers);
+                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType());
             }
 
             GatherResource();
@@ -202,34 +197,14 @@ namespace Cursor
                 return;
             }
 
-
-            if (resourceToGather.GetType() == typeof(ResourceTypes.Tree))
+            foreach (Person person in prevIdlePeople)
             {
-                foreach (Person person in prevIdlePeople)
+                if (idlePeople.Contains(person))
                 {
-                    if(idlePeople.Contains(person))
+                    Resource resourceToGather = ResourceGatheringManager.Instance.GetNextResourceToHarvest();
+                    if (resourceToGather != null)
                     {
-                        ResourceTypes.Tree treeToBeGathered = (ResourceTypes.Tree)ResourceGatheringManager.Instance.ChooseRadomResource(resourceToGather.GetType());
-
-                        if(treeToBeGathered != null)
-                        {
-                            person.NewGatherResourceBT(treeToBeGathered);
-                        }
-                    }
-                }
-            }
-            else if (resourceToGather.GetType() == typeof(Stone))
-            {
-                foreach (Person person in prevIdlePeople)
-                {
-                    if (idlePeople.Contains(person))
-                    {
-                        Stone stoneToBeGathered = (Stone)ResourceGatheringManager.Instance.ChooseRadomResource(resourceToGather.GetType());
-
-                        if (stoneToBeGathered)
-                        {
-                            person.NewGatherResourceBT(stoneToBeGathered);
-                        }
+                        person.NewGatherResourceBT(resourceToGather);
                     }
                 }
             }
@@ -305,14 +280,11 @@ namespace Cursor
         public void DisableCursorMarker()
         {
             cursorMarker.gameObject.SetActive(false);
-            Debug.Log("disabling");
-
         }
 
         public void EnableCursorMarker()
         {
             cursorMarker.gameObject.SetActive(true);
-            Debug.Log("enabling");
         }
     }
 }
