@@ -377,6 +377,7 @@ namespace Grid
 
                 MeshRenderer meshRenderer = chunk.GetComponent<MeshRenderer>();
                 meshRenderer.material.mainTexture = texture;
+                meshRenderer.material.SetFloat("_Smoothness", 0);
             }
         }
 
