@@ -138,37 +138,9 @@
             "id": "7e7d5e75-49e2-4820-b139-09d96b400f6b",
             "actions": [
                 {
-                    "name": "Drag",
-                    "type": "Value",
-                    "id": "b1b6b9aa-12a5-4f40-80a8-f86fd4f5b4e9",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": true
-                }
-            ],
-            "bindings": [
-                {
-                    "name": "",
-                    "id": "f5d9d18e-1133-477d-ab00-5fc6f2cb37f4",
-                    "path": "<Mouse>/leftButton",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "Drag",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                }
-            ]
-        },
-        {
-            "name": "Tools",
-            "id": "06cb43a2-f987-4d04-8a7d-8f4a43bdaed3",
-            "actions": [
-                {
                     "name": "LeftMouseButton",
                     "type": "Button",
-                    "id": "47f4f55e-699f-46f8-8bd2-4e51f0a37560",
+                    "id": "fb446d8b-38ba-4a4f-8043-a70b987b496b",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -177,7 +149,7 @@
                 {
                     "name": "RightMouseButton",
                     "type": "Button",
-                    "id": "0ded4282-a0ae-4afb-ae04-be557d638b11",
+                    "id": "4bd9a221-503d-4f36-a461-432c10a11836",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -187,7 +159,7 @@
             "bindings": [
                 {
                     "name": "",
-                    "id": "87108964-9f80-44d5-b68d-39cd984e6cc7",
+                    "id": "80899870-bf86-4bbf-86b0-36cbc19bcd7d",
                     "path": "<Mouse>/leftButton",
                     "interactions": "",
                     "processors": "",
@@ -198,7 +170,7 @@
                 },
                 {
                     "name": "",
-                    "id": "02164c62-c98c-4656-b52d-2e394ad9941c",
+                    "id": "cdab35de-3cf4-472d-aa00-60a03cd8197e",
                     "path": "<Mouse>/rightButton",
                     "interactions": "",
                     "processors": "",

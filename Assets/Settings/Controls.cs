@@ -160,37 +160,9 @@ public partial class @Controls : IInputActionCollection2, IDisposable
             ""id"": ""7e7d5e75-49e2-4820-b139-09d96b400f6b"",
             ""actions"": [
                 {
-                    ""name"": ""Drag"",
-                    ""type"": ""Value"",
-                    ""id"": ""b1b6b9aa-12a5-4f40-80a8-f86fd4f5b4e9"",
-                    ""expectedControlType"": """",
-                    ""processors"": """",
-                    ""interactions"": """",
-                    ""initialStateCheck"": true
-                }
-            ],
-            ""bindings"": [
-                {
-                    ""name"": """",
-                    ""id"": ""f5d9d18e-1133-477d-ab00-5fc6f2cb37f4"",
-                    ""path"": ""<Mouse>/leftButton"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Drag"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                }
-            ]
-        },
-        {
-            ""name"": ""Tools"",
-            ""id"": ""06cb43a2-f987-4d04-8a7d-8f4a43bdaed3"",
-            ""actions"": [
-                {
                     ""name"": ""LeftMouseButton"",
                     ""type"": ""Button"",
-                    ""id"": ""47f4f55e-699f-46f8-8bd2-4e51f0a37560"",
+                    ""id"": ""fb446d8b-38ba-4a4f-8043-a70b987b496b"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -199,7 +171,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                 {
                     ""name"": ""RightMouseButton"",
                     ""type"": ""Button"",
-                    ""id"": ""0ded4282-a0ae-4afb-ae04-be557d638b11"",
+                    ""id"": ""4bd9a221-503d-4f36-a461-432c10a11836"",
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
@@ -209,7 +181,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
             ""bindings"": [
                 {
                     ""name"": """",
-                    ""id"": ""87108964-9f80-44d5-b68d-39cd984e6cc7"",
+                    ""id"": ""80899870-bf86-4bbf-86b0-36cbc19bcd7d"",
                     ""path"": ""<Mouse>/leftButton"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -220,7 +192,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""02164c62-c98c-4656-b52d-2e394ad9941c"",
+                    ""id"": ""cdab35de-3cf4-472d-aa00-60a03cd8197e"",
                     ""path"": ""<Mouse>/rightButton"",
                     ""interactions"": """",
                     ""processors"": """",
@@ -242,11 +214,8 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         m_Camera_RotateButton = m_Camera.FindAction("RotateButton", throwIfNotFound: true);
         // Cursor
         m_Cursor = asset.FindActionMap("Cursor", throwIfNotFound: true);
-        m_Cursor_Drag = m_Cursor.FindAction("Drag", throwIfNotFound: true);
-        // Tools
-        m_Tools = asset.FindActionMap("Tools", throwIfNotFound: true);
-        m_Tools_LeftMouseButton = m_Tools.FindAction("LeftMouseButton", throwIfNotFound: true);
-        m_Tools_RightMouseButton = m_Tools.FindAction("RightMouseButton", throwIfNotFound: true);
+        m_Cursor_LeftMouseButton = m_Cursor.FindAction("LeftMouseButton", throwIfNotFound: true);
+        m_Cursor_RightMouseButton = m_Cursor.FindAction("RightMouseButton", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -363,12 +332,14 @@ public partial class @Controls : IInputActionCollection2, IDisposable
     // Cursor
     private readonly InputActionMap m_Cursor;
     private ICursorActions m_CursorActionsCallbackInterface;
-    private readonly InputAction m_Cursor_Drag;
+    private readonly InputAction m_Cursor_LeftMouseButton;
+    private readonly InputAction m_Cursor_RightMouseButton;
     public struct CursorActions
     {
         private @Controls m_Wrapper;
         public CursorActions(@Controls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @Drag => m_Wrapper.m_Cursor_Drag;
+        public InputAction @LeftMouseButton => m_Wrapper.m_Cursor_LeftMouseButton;
+        public InputAction @RightMouseButton => m_Wrapper.m_Cursor_RightMouseButton;
         public InputActionMap Get() { return m_Wrapper.m_Cursor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -378,49 +349,14 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         {
             if (m_Wrapper.m_CursorActionsCallbackInterface != null)
             {
-                @Drag.started -= m_Wrapper.m_CursorActionsCallbackInterface.OnDrag;
-                @Drag.performed -= m_Wrapper.m_CursorActionsCallbackInterface.OnDrag;
-                @Drag.canceled -= m_Wrapper.m_CursorActionsCallbackInterface.OnDrag;
+                @LeftMouseButton.started -= m_Wrapper.m_CursorActionsCallbackInterface.OnLeftMouseButton;
+                @LeftMouseButton.performed -= m_Wrapper.m_CursorActionsCallbackInterface.OnLeftMouseButton;
+                @LeftMouseButton.canceled -= m_Wrapper.m_CursorActionsCallbackInterface.OnLeftMouseButton;
+                @RightMouseButton.started -= m_Wrapper.m_CursorActionsCallbackInterface.OnRightMouseButton;
+                @RightMouseButton.performed -= m_Wrapper.m_CursorActionsCallbackInterface.OnRightMouseButton;
+                @RightMouseButton.canceled -= m_Wrapper.m_CursorActionsCallbackInterface.OnRightMouseButton;
             }
             m_Wrapper.m_CursorActionsCallbackInterface = instance;
-            if (instance != null)
-            {
-                @Drag.started += instance.OnDrag;
-                @Drag.performed += instance.OnDrag;
-                @Drag.canceled += instance.OnDrag;
-            }
-        }
-    }
-    public CursorActions @Cursor => new CursorActions(this);
-
-    // Tools
-    private readonly InputActionMap m_Tools;
-    private IToolsActions m_ToolsActionsCallbackInterface;
-    private readonly InputAction m_Tools_LeftMouseButton;
-    private readonly InputAction m_Tools_RightMouseButton;
-    public struct ToolsActions
-    {
-        private @Controls m_Wrapper;
-        public ToolsActions(@Controls wrapper) { m_Wrapper = wrapper; }
-        public InputAction @LeftMouseButton => m_Wrapper.m_Tools_LeftMouseButton;
-        public InputAction @RightMouseButton => m_Wrapper.m_Tools_RightMouseButton;
-        public InputActionMap Get() { return m_Wrapper.m_Tools; }
-        public void Enable() { Get().Enable(); }
-        public void Disable() { Get().Disable(); }
-        public bool enabled => Get().enabled;
-        public static implicit operator InputActionMap(ToolsActions set) { return set.Get(); }
-        public void SetCallbacks(IToolsActions instance)
-        {
-            if (m_Wrapper.m_ToolsActionsCallbackInterface != null)
-            {
-                @LeftMouseButton.started -= m_Wrapper.m_ToolsActionsCallbackInterface.OnLeftMouseButton;
-                @LeftMouseButton.performed -= m_Wrapper.m_ToolsActionsCallbackInterface.OnLeftMouseButton;
-                @LeftMouseButton.canceled -= m_Wrapper.m_ToolsActionsCallbackInterface.OnLeftMouseButton;
-                @RightMouseButton.started -= m_Wrapper.m_ToolsActionsCallbackInterface.OnRightMouseButton;
-                @RightMouseButton.performed -= m_Wrapper.m_ToolsActionsCallbackInterface.OnRightMouseButton;
-                @RightMouseButton.canceled -= m_Wrapper.m_ToolsActionsCallbackInterface.OnRightMouseButton;
-            }
-            m_Wrapper.m_ToolsActionsCallbackInterface = instance;
             if (instance != null)
             {
                 @LeftMouseButton.started += instance.OnLeftMouseButton;
@@ -432,7 +368,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
             }
         }
     }
-    public ToolsActions @Tools => new ToolsActions(this);
+    public CursorActions @Cursor => new CursorActions(this);
     public interface ICameraActions
     {
         void OnMove(InputAction.CallbackContext context);
@@ -441,10 +377,6 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         void OnRotateButton(InputAction.CallbackContext context);
     }
     public interface ICursorActions
-    {
-        void OnDrag(InputAction.CallbackContext context);
-    }
-    public interface IToolsActions
     {
         void OnLeftMouseButton(InputAction.CallbackContext context);
         void OnRightMouseButton(InputAction.CallbackContext context);
