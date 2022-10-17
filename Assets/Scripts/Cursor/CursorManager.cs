@@ -29,6 +29,7 @@ namespace Cursor
         private Image cursorMarkerImage;
         private GatherResourcesTool gatherResourcesTool;
         private Resource resourceToGather;
+        private Action onNewResourceSelected;
 
         //Controls NewInputSystem
         private Controls controls;
@@ -164,11 +165,9 @@ namespace Cursor
 
                 Node node = Grid.Grid.Instance.GetCell(nodePosition.x, nodePosition.y);
 
-                deleteTool?.UseTool(node.Building);
-                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType());
+                deleteTool?.UseDeleteTool(node);
+                gatherResourcesTool?.UseResourceTool(node.Resource, resourceToGather.GetType(), onNewResourceSelected);
             }
-
-            GatherResource();
 
             nodesSelected.Clear();
         }
@@ -179,6 +178,7 @@ namespace Cursor
             HashSet<Person> idlePeople = populationManager.IdlePeople;
             Person[] prevIdlePeople = new Person[populationManager.IdlePeople.Count];
             populationManager.IdlePeople.CopyTo(prevIdlePeople);
+
             if (resourceToGather == null)
             {
                 return;
@@ -234,13 +234,14 @@ namespace Cursor
             }
             cursorMarkerImage.color = color;
 
-
             rightMouseCursor.performed += OnClickCancel;
+            onNewResourceSelected += GatherResource;
         }
 
         private void OnClickCancel(InputAction.CallbackContext obj)
         {
             ResetDeleteTool();
+            onNewResourceSelected -= GatherResource;
         }
 
         private Vector2Int V3ToV2(Vector3Int vector)
