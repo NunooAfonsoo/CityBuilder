@@ -9,9 +9,10 @@ namespace Population
     {
         AIPath aiPath;
         AIDestinationSetter aiDestinationSetter;
-
-        public MoveToPosition(AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath)
+        Person person;
+        public MoveToPosition(AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath, Person person)
         {
+            this.person = person;
             this.aiDestinationSetter = aiDestinationSetter;
             UpdateTargetPosition(position);
             this.aiPath = aiPath;
@@ -21,6 +22,11 @@ namespace Population
         {
             if (!aiPath.reachedEndOfPath && !aiPath.reachedDestination)
             {
+                if (person.PersonState != Person.PersonStates.Moving)
+                {
+                    person.ChangePersonState(Person.PersonStates.Moving);
+                    person.SetAnimation(Person.PersonStates.Moving);
+                }
                 return Result.Running;
             }
             else

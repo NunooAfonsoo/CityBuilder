@@ -7,6 +7,7 @@ using ResourceTypes;
 
 namespace Population
 {
+    [RequireComponent(typeof(AnimatorController))]
     public class Person : MonoBehaviour
     {
         [Header("PATHFOLLOWING")]
@@ -17,6 +18,7 @@ namespace Population
 
         public enum PersonStates
         {
+            Moving,
             Idling,
             ChoppingTree,
             MiningStone,
@@ -27,6 +29,7 @@ namespace Population
         private Task currentBehaviourTree;
         public PersonStates PersonState { get; private set; }
 
+        private AnimatorController animator;
         void Start()
         {
             aiDestinationSetter = GetComponent<AIDestinationSetter>();
@@ -36,6 +39,8 @@ namespace Population
 
             currentBehaviourTree = new Idle(this, aiDestinationSetter, CalculateNewIdleTargetPosition(), aiPath);
             PopulationManager.Instance.RegisterPerson(this);
+
+            animator = GetComponent<AnimatorController>();
         }
 
         private void FixedUpdate()
@@ -62,11 +67,16 @@ namespace Population
 
         public void NewGatherResourceBT(Resource resource)
         {
+            Debug.Log("NewGatherResourceBT");
             float radianAngle = Random.Range(0f, 2 * Mathf.PI);
             Vector3 gatherPosition = resource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
             currentBehaviourTree = new GatherResource(this, aiDestinationSetter, gatherPosition, aiPath, resource);
         }
         #endregion
 
+        public void SetAnimation(PersonStates state)
+        {
+            animator.SetAnimation(state);
+        }
     }
 }

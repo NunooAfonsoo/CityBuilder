@@ -23,6 +23,11 @@ namespace Population
             if(timeSinceStart < timeToWait)
             {
                 timeSinceStart += Time.deltaTime;
+                if (person.PersonState != Person.PersonStates.Idling)
+                {
+                    person.ChangePersonState(Person.PersonStates.Idling);
+                    person.SetAnimation(Person.PersonStates.Idling);
+                }
                 return Result.Running;
             }
             else
