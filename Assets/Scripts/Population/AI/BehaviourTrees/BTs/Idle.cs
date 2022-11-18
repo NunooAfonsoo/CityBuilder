@@ -16,7 +16,7 @@ namespace Population
 
             populationManager.RegisterPerson(person);
 
-            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath);
+            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath, person);
             this.children = new List<Task>()
             {
                 moveToPosition,

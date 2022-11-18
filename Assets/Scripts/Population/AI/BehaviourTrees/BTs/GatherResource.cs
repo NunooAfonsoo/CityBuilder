@@ -13,6 +13,7 @@ namespace Population
             PopulationManager populationManager = PopulationManager.Instance;
             populationManager.RemovePerson(person);
 
+            
             if (resourceToGather.GetType() == typeof(ResourceTypes.Tree))
             {
                 person.ChangePersonState(Person.PersonStates.ChoppingTree);
@@ -21,10 +22,10 @@ namespace Population
             {
                 person.ChangePersonState(Person.PersonStates.MiningStone);
             }
-
+            
             populationManager.RegisterPerson(person);
 
-            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath);
+            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath, person);
             this.children = new List<Task>()
             {
                 moveToPosition,
