@@ -37,9 +37,9 @@ namespace Pathfinding {
 
 		/// <summary>Updates the AI's destination </summary>
 		public void UpdateTargetPosition (Vector3 position) {
-            target = position;
-            if (target != new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity) && ai != null)
+			if (position != new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity))
             {
+				target = position;
                 ai.destination = position;
             }
 		}

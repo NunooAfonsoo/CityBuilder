@@ -16,4 +16,12 @@ namespace Constants
         public const string ResourceUIBackgroundGainColor = "#45B748E1";
         public const string ResourceUIBackgroundLossColor = "#CA6353E1";
     }
+
+    public static class AnimationStrings
+    {
+        public const string MOVING = "Moving";
+        public const string IDLING = "Idling";
+        public const string HARVESTING_RESOURCE = "HarvestingResource";
+
+    }
 }

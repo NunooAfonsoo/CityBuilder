@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Tools;
 using UnityEngine.UI;
-using System.Linq;
 using Constants;
 using ResourceTypes;
 using Population;
@@ -47,8 +46,7 @@ namespace Cursor
             gatherResourcesTool = null;
             cursorMarkerImage = cursorMarker.GetComponent<Image>();
 
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out Color color);
             cursorMarkerImage.color = color;
         }
 
@@ -82,8 +80,6 @@ namespace Cursor
 
         private void DragEnd(InputAction.CallbackContext obj)
         {
-            Node node = Grid.Grid.Instance.GetCell(CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
-
             cursorMarker.sizeDelta = new Vector2(1, 1);
             if (nodesSelected.Count > 0)
             {
@@ -201,8 +197,7 @@ namespace Cursor
         {
             deleteTool = null;
             gatherResourcesTool = null;
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out Color color);
             cursorMarkerImage.color = color;
 
             rightMouseCursor.performed -= OnClickCancel;
@@ -211,8 +206,7 @@ namespace Cursor
         public void CreateDeleteTool()
         {
             deleteTool = new DeleteTool();
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerDeleteColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerDeleteColor, out Color color);
             cursorMarkerImage.color = color;
 
             rightMouseCursor.performed += OnClickCancel;

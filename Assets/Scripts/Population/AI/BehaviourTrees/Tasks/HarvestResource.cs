@@ -7,9 +7,10 @@ namespace Population
     public class HarvestResource : Task
     {
         private float timeSinceStart;
-        Person person;
-        Resource resource;
-        MoveToPosition moveToPosition;
+        private Person person;
+        private Resource resource;
+        private MoveToPosition moveToPosition;
+        private bool firstRun;
         public HarvestResource(Person person, Resource resource, MoveToPosition moveToPosition)
         {
 
@@ -18,6 +19,7 @@ namespace Population
             this.resource = resource;
             this.moveToPosition = moveToPosition;
             timeSinceStart = 0;
+            firstRun = true;
         }
 
         public override Result Run()
@@ -26,27 +28,31 @@ namespace Population
             {
                 person.transform.LookAt(resource.transform);
                 timeSinceStart += Time.deltaTime;
-                if(resource.GetType() == typeof(Stone) && (person.PersonState != Person.PersonStates.MiningStone))
+                if(firstRun)
                 {
-                    person.ChangePersonState(Person.PersonStates.MiningStone);
-                    person.SetAnimation(Person.PersonStates.MiningStone);
+                    firstRun = false;
 
-                }
-                else if (resource.GetType() == typeof(ResourceTypes.Tree) && (person.PersonState != Person.PersonStates.ChoppingTree))
-                {
-                    person.ChangePersonState(Person.PersonStates.ChoppingTree);
-                    person.SetAnimation(Person.PersonStates.ChoppingTree);
+                    if(resource.GetType() == typeof(Stone))
+                    {
+                        person.ChangeAnimation(Person.PersonStates.MiningStone);
+                    }
+                    else if (resource.GetType() == typeof(ResourceTypes.Tree))
+                    {
+                        person.ChangeAnimation(Person.PersonStates.ChoppingTree);
+                    }
                 }
                 return Result.Running;
             }
             else
             {
-                Resource nextResource = ResourceGatheringManager.Instance.GetNextResourceToHarvest();
+                resource.ChangeGatheredState(Resource.ResourceGatherStates.Gathered);
 
-                if (nextResource != null)
+                resource = ResourceGatheringManager.Instance.GetNextResourceToHarvest();
+
+                if (resource != null)
                 {
                     float radianAngle = Random.Range(0f, 2 * Mathf.PI);
-                    Vector3 gatherPosition = nextResource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
+                    Vector3 gatherPosition = resource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
 
                     moveToPosition.UpdateTargetPosition(gatherPosition);
                 }
@@ -54,12 +60,10 @@ namespace Population
                 {
                     person.NewIdleBT();
                 }
-                ResourceManager.Instance.AddResource(resource.GetType(), 2);
 
-                resource.ChangeGatheredState(Resource.ResourceGatherStates.Gathered);
                 timeSinceStart = 0;
-                resource = nextResource;
 
+                firstRun = true;
                 return Result.Success;
             }
         }

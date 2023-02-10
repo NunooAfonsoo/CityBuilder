@@ -15,12 +15,25 @@ namespace ResourceTypes
             BeingGathered,
             Gathered
         }
+
         public ResourceGatherStates ResourceGatherState { get; private set; }
-        public int ResourceQuantity = 0;
+
         [SerializeField] private GameObject resourceMarker;
-        private void Start()
+        private int harvestAmount;
+
+        public static event EventHandler<OnResourceHarvestedArgs> OnResourceHarvested;
+        public class OnResourceHarvestedArgs : EventArgs
+        {
+            public int harvestAmount;
+            public OnResourceHarvestedArgs(int harvestAmount)
+            {
+                this.harvestAmount = harvestAmount;
+            }
+        }
+        private void Awake()
         {
             ChangeGatheredState(ResourceGatherStates.NotGathered);
+            harvestAmount = 2;
         }
 
         public void ChangeGatheredState(ResourceGatherStates state)
@@ -34,23 +47,25 @@ namespace ResourceTypes
 
         private void ResourceHarvested()
         {
+            OnResourceHarvested?.Invoke(this, new OnResourceHarvestedArgs(harvestAmount));
             // GIVE RESOURCES 
             // PLAY ANIMATION?
-            if (this.gameObject)
-            {
-                Destroy(this.gameObject);
-            }
 
             Grid.Grid grid = Grid.Grid.Instance;
             Vector3Int position = grid.GetGridPositionFromWorldPosition(transform.position);
 
-            if(GetType() == typeof(ResourceTypes.Tree))
+            if(GetType() == typeof(Tree))
             {
            
             }
             else if (GetType() == typeof(Stone))
             {
                 grid.SetNodeWalkability(position.x, position.z, true);
+            }
+
+            if (this.gameObject)
+            {
+                Destroy(this.gameObject);
             }
         }
 

@@ -6,23 +6,16 @@ using System.Linq;
 
 namespace ResourceTypes
 {
-    public class ResourceGatheringManager
+    public class ResourceGatheringManager : MonoBehaviour
     {
-        private static ResourceGatheringManager instance;
-        public static ResourceGatheringManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                    instance = new ResourceGatheringManager();
-                return instance;
-            }
-        }
+        public static ResourceGatheringManager Instance { get; private set; }
 
         public Queue<Resource> ResourcesToBeGathered { get; private set; }
 
-        private ResourceGatheringManager()
+        private void Awake()
         {
+            Instance = this;
+
             ResourcesToBeGathered = new Queue<Resource>();
         }
 
@@ -31,19 +24,14 @@ namespace ResourceTypes
             ResourcesToBeGathered.Enqueue(resource);
         }
 
-        public void RemoveResource(Resource resource)
+        public void ClearResourcesQueue()
         {
-            ResourcesToBeGathered = new Queue<Resource>(ResourcesToBeGathered.Where(x => x != resource));
+            ClearResourcesToBeGathered();
         }
 
         private void ClearResourcesToBeGathered()
         {
             ResourcesToBeGathered.Clear();
-        }
-
-        public void ClearResourcesQueue()
-        {
-            ClearResourcesToBeGathered();
         }
 
         public Resource GetNextResourceToHarvest()
@@ -52,7 +40,6 @@ namespace ResourceTypes
             {
                 Resource resource = ResourcesToBeGathered.Dequeue();
                 resource.ChangeGatheredState(Resource.ResourceGatherStates.BeingGathered);
-
                 return resource;
             }
             return null;
