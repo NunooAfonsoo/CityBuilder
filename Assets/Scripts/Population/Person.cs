@@ -4,21 +4,19 @@ using UnityEngine;
 using Pathfinding;
 using UnityEngine.InputSystem;
 using ResourceTypes;
+using System;
 
 namespace Population
 {
-    [RequireComponent(typeof(AnimatorController))]
     public class Person : MonoBehaviour
     {
         [Header("PATHFOLLOWING")]
         private AIDestinationSetter aiDestinationSetter;
-        private AIPath aiPath;
-        Seeker seeker;
+        public  AIPath aiPath;
         Vector3 wanderStartPoint;
 
         public enum PersonStates
         {
-            Moving,
             Idling,
             ChoppingTree,
             MiningStone,
@@ -27,20 +25,45 @@ namespace Population
 
         [Header("Behaviour Tree")]
         private Task currentBehaviourTree;
-        public PersonStates PersonState { get; private set; }
+        public PersonStates CurrentState { get; private set; }
+        public event EventHandler<StateChangedArgs> OnStateChanged;
+        public class StateChangedArgs : EventArgs
+        {
+            public PersonStates oldState;
+            public PersonStates newState;
 
-        private AnimatorController animator;
-        void Start()
+            public StateChangedArgs(PersonStates oldState, PersonStates newState)
+            {
+                this.oldState = oldState;
+                this.newState = newState;
+            }
+        }
+
+
+        public event EventHandler OnMoving;
+        public event EventHandler<AnimationChangedArgs> OnAnimationChanged;
+        public class AnimationChangedArgs : EventArgs
+        {
+            public PersonStates state;
+
+            public AnimationChangedArgs(PersonStates state)
+            {
+                this.state = state;
+            }
+        }
+
+        private void Awake()
         {
             aiDestinationSetter = GetComponent<AIDestinationSetter>();
             aiPath = GetComponent<AIPath>();
-            seeker = GetComponent<Seeker>();
             wanderStartPoint = transform.position;
+        }
 
+        void Start()
+        {
             currentBehaviourTree = new Idle(this, aiDestinationSetter, CalculateNewIdleTargetPosition(), aiPath);
-            PopulationManager.Instance.RegisterPerson(this);
 
-            animator = GetComponent<AnimatorController>();
+            PopulationManager.Instance.PersonSpawned(this);
         }
 
         private void FixedUpdate()
@@ -48,35 +71,42 @@ namespace Population
             currentBehaviourTree?.Run();
         }
 
-        public void ChangePersonState(PersonStates state)
+        public void PlayMovingAnimation()
         {
-            PersonState = state;
+            OnMoving?.Invoke(this, EventArgs.Empty);
         }
 
+        public void ChangeState(PersonStates state)
+        {
+            OnStateChanged?.Invoke(this, new StateChangedArgs(CurrentState, state));
+            CurrentState = state;
+        }
+
+        public void ChangeAnimation(PersonStates state)
+        {
+            OnAnimationChanged?.Invoke(this, new AnimationChangedArgs(state));
+        }
 
         #region Behaviour Trees
         public void NewIdleBT()
         {
+            currentBehaviourTree = null;
             currentBehaviourTree = new Idle(this, aiDestinationSetter, CalculateNewIdleTargetPosition(), aiPath);
         }
 
         public Vector3 CalculateNewIdleTargetPosition()
         {
-            return new Vector3(wanderStartPoint.x + Random.Range(-3.0f, 3.0f), transform.position.y, wanderStartPoint.z + Random.Range(-3.0f, 3.0f));
+            return new Vector3(wanderStartPoint.x + UnityEngine.Random.Range(-3.0f, 3.0f), transform.position.y, wanderStartPoint.z + UnityEngine.Random.Range(-3.0f, 3.0f));
         }
 
         public void NewGatherResourceBT(Resource resource)
         {
-            Debug.Log("NewGatherResourceBT");
-            float radianAngle = Random.Range(0f, 2 * Mathf.PI);
+            currentBehaviourTree = null;
+            float radianAngle = UnityEngine.Random.Range(0f, 2 * Mathf.PI);
             Vector3 gatherPosition = resource.transform.position + new Vector3(0.25f * Mathf.Cos(radianAngle), 0f, 0.25f * Mathf.Sin(radianAngle));
             currentBehaviourTree = new GatherResource(this, aiDestinationSetter, gatherPosition, aiPath, resource);
         }
         #endregion
 
-        public void SetAnimation(PersonStates state)
-        {
-            animator.SetAnimation(state);
-        }
     }
 }

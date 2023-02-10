@@ -15,10 +15,8 @@ namespace Tools
 
         public override void UseResourceTool(GameObject resourceObj, Type type, Action onNewResourceSelected)
         {
-            if (resourceObj != null)
+            if (resourceObj != null && resourceObj.TryGetComponent(out Resource resource))
             {
-                resourceObj.TryGetComponent(out Resource resource);
-
                 if (resource.GetType() == type && ResourceCanBeGathered(resource))
                 {
                     resourceGatheringManager.RegisterResource(resource);
