@@ -18,96 +18,42 @@ namespace Resources
         private int iron;
         private int gold;
 
-        [SerializeField] private Image woodBG;
-        [SerializeField] private Image stoneBG;
-        [SerializeField] private Image ironBG;
-        [SerializeField] private Image goldBG;
+        public class ResourceTypeArg : EventArgs
+        {
+            public Type type;
+            public bool increase;
+            public int newAmount;
 
-        [SerializeField] private TextMeshProUGUI woodText;
-        [SerializeField] private TextMeshProUGUI stoneText;
-        [SerializeField] private TextMeshProUGUI ironText;
-        [SerializeField] private TextMeshProUGUI goldText;
+            public ResourceTypeArg(Type type, bool increase, int newAmount)
+            {
+                this.type = type;
+                this.increase = increase;
+                this.newAmount = newAmount;
+            }
+        }
 
-        public static event Action<Type, bool> OnResourceChanged;
-        private Coroutine ChangeBackgroundColorCoroutine;
         private void Awake()
         {
             Instance = this;
-
-            OnResourceChanged += UpdateResourceUI;
-
-            ColorUtility.TryParseHtmlString(Colors.ResourceUIBackgroundColor, out Color normalBGColor);
-
-            woodBG.color = normalBGColor;
-            stoneBG.color = normalBGColor;
-            ironBG.color = normalBGColor;
-            goldBG.color = normalBGColor;
-
-            UpdateResourceUI(typeof(ResourceTypes.Tree), true);
-            UpdateResourceUI(typeof(Stone), true);
-            UpdateResourceUI(typeof(Iron), true);
-            UpdateResourceUI(typeof(Gold), true);
         }
 
-        private void UpdateResourceUI(Type type, bool increase)
+        private void Start()
         {
-            if(ChangeBackgroundColorCoroutine != null)
-            {
-                StopCoroutine(ChangeBackgroundColorCoroutine);
-            }
-
-            if (type == typeof(ResourceTypes.Tree))
-            {
-                woodText.text = wood.ToString();
-                StartCoroutine(ChangeBackgroundColor(woodBG, increase));
-            }
-            else if (type == typeof(Stone))
-            {
-                stoneText.text = stone.ToString();
-                StartCoroutine(ChangeBackgroundColor(stoneBG, increase));
-            }
-            else if (type == typeof(Iron))
-            {
-                ironText.text = iron.ToString();
-                StartCoroutine(ChangeBackgroundColor(ironBG, increase));
-            }
-            else if (type == typeof(Gold))
-            {
-                goldText.text = gold.ToString();
-                StartCoroutine(ChangeBackgroundColor(goldBG, increase));
-            }
-
+            Resource.OnResourceHarvested += Resource_OnResourceHarvested;
         }
 
-        private IEnumerator ChangeBackgroundColor(Image resourceImage, bool increase)
+        private void Resource_OnResourceHarvested(object sender, Resource.OnResourceHarvestedArgs e)
         {
-            Color color;
-            if(increase)
-            {
-                ColorUtility.TryParseHtmlString(Colors.ResourceUIBackgroundGainColor, out color);
-            }
-            else
-            {
-                ColorUtility.TryParseHtmlString(Colors.ResourceUIBackgroundLossColor, out color);
-            }
-
-            resourceImage.transform.localScale = new Vector3(1.2f, 1.2f, 1.2f);
-
-            resourceImage.color = color;
-            yield return new WaitForSecondsRealtime(0.5f);
-
-            ColorUtility.TryParseHtmlString(Colors.ResourceUIBackgroundColor, out color);
-            resourceImage.color = color;
-            resourceImage.transform.localScale = new Vector3(1f, 1f, 1f);
+            AddResource(sender.GetType(), e.harvestAmount);
         }
 
         public void AddResource(Type type, int quantity)
         {
-            if(type == typeof(ResourceTypes.Tree))
+            if (type == typeof(ResourceTypes.Tree))
             {
                 wood += quantity;
             }
-            else if(type == typeof(Stone))
+            else if (type == typeof(Stone))
             {
                 stone += quantity;
             }
@@ -119,7 +65,6 @@ namespace Resources
             {
                 gold += quantity;
             }
-            OnResourceChanged?.Invoke(type, quantity >= 0);
         }
 
         public void UseResource(Type[] type, int[] quantity)
@@ -142,29 +87,7 @@ namespace Resources
                 {
                     gold += quantity[i];
                 }
-                OnResourceChanged?.Invoke(type[i], quantity[i] >= 0);
             }
-        }
-
-        public int GetResource(Type type)
-        {
-            if (type == typeof(ResourceTypes.Tree))
-            {
-                return wood;
-            }
-            else if (type == typeof(Stone))
-            {
-                return stone;
-            }
-            else if (type == typeof(Iron))
-            {
-                return iron;
-            }
-            else if (type == typeof(Gold))
-            {
-                return gold;
-            }
-            return -1;
         }
     }
 }

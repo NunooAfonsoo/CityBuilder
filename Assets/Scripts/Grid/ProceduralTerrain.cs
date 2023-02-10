@@ -20,8 +20,6 @@ namespace Grid
         [SerializeField] private GameObject[] goldPrefabs;
         [SerializeField] private float goldSpawnProb;
 
-        [SerializeField] private GameObject[] buildingsPrefabs;
-
         [Space(20)]
         [SerializeField] private Color waterColor;
         [SerializeField] private Color grassColor;
@@ -34,7 +32,7 @@ namespace Grid
         [SerializeField] private int size;
 
         private List<GameObject> chunks;
-
+        [SerializeField] private Material groundMaterial;
         [SerializeField] private bool drawWater;
         [SerializeField] private bool spawnTrees;
         [SerializeField] private bool spawnMinerals;
@@ -148,7 +146,8 @@ namespace Grid
                     MeshFilter meshFilter = chunk.AddComponent<MeshFilter>();
                     meshFilter.mesh = mesh;
 
-                    MeshRenderer meshRenderer = chunk.AddComponent<MeshRenderer>();
+                    MeshRenderer renderer = chunk.AddComponent<MeshRenderer>();
+                    renderer.material = groundMaterial;
                     chunks.Add(chunk);
                     chunkIndexX++;
                 }
@@ -377,6 +376,7 @@ namespace Grid
 
                 MeshRenderer meshRenderer = chunk.GetComponent<MeshRenderer>();
                 meshRenderer.material.mainTexture = texture;
+                meshRenderer.material.SetFloat("_Smoothness", 0);
             }
         }
 

@@ -306,6 +306,7 @@ namespace Pathfinding {
 				var setter = GetComponent<AIDestinationSetter>();
 				if (setter == null) setter = gameObject.AddComponent<AIDestinationSetter>();
 				setter.target = value;
+
 				destination = value != null ? value : new Vector3(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity);
 			}
 		}
@@ -762,7 +763,7 @@ namespace Pathfinding {
 				centerOffsetCompatibility = float.NaN;
 			}
 			#pragma warning disable 618
-			if (unityThread && targetCompatibility != null) target = targetCompatibility;
+			// if (unityThread && targetCompatibility != null) target = targetCompatibility;
 			#pragma warning restore 618
 			if (version <= 3) {
 				repathRate = repathRateCompatibility;

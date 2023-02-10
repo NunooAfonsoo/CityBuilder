@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using Tools;
 using UnityEngine.UI;
-using System.Linq;
 using Constants;
 using ResourceTypes;
 using Population;
@@ -21,24 +20,22 @@ namespace Cursor
         [SerializeField] private RectTransform cursorMarker;
         public Vector3Int CurrentMouseGridPosition{ get; private set; }
         private float nodeOffset;
-        private Vector3Int draggingNewMousePosition;
         private bool dragging;
         private HashSet<Vector2Int> nodesSelected;
 
-        
         //Cursor Marker and Tools
         private DeleteTool deleteTool;
         private Image cursorMarkerImage;
         private GatherResourcesTool gatherResourcesTool;
         private Resource resourceToGather;
-        [SerializeField] GameObject[] resourceMarkers;
+        private Action onNewResourceSelected;
 
         //Controls NewInputSystem
         private Controls controls;
-        private InputAction leftMouseDeleteTool;
-        private InputAction rightMouse;
+        private InputAction rightMouseCursor;
         private InputAction leftMouseCursor;
 
+        private Vector3Int mousePosition;
         private void Start()
         {
 
@@ -49,29 +46,47 @@ namespace Cursor
             gatherResourcesTool = null;
             cursorMarkerImage = cursorMarker.GetComponent<Image>();
 
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out Color color);
             cursorMarkerImage.color = color;
         }
 
         private void OnEnable()
         {
             controls = new Controls();
-            leftMouseDeleteTool = controls.Tools.LeftMouseButton;
-            rightMouse = controls.Tools.RightMouseButton;
-            leftMouseCursor = controls.Cursor.Drag;
             controls.Cursor.Enable();
+
+            rightMouseCursor = controls.Cursor.RightMouseButton;
+            leftMouseCursor = controls.Cursor.LeftMouseButton;
+
+            leftMouseCursor.started += DragStart;
+            leftMouseCursor.canceled += DragEnd;
         }
 
         private void OnDisable()
         {
-            controls.Tools.Disable();
             controls.Cursor.Disable();
         }
 
         private void Update()
         {
             HandleCursorMarkerPosition();
+        }
+
+        private void DragStart(InputAction.CallbackContext obj)
+        {
+            dragging = true;
+            CurrentMouseGridPosition = mousePosition;
+        }
+
+        private void DragEnd(InputAction.CallbackContext obj)
+        {
+            cursorMarker.sizeDelta = new Vector2(1, 1);
+            if (nodesSelected.Count > 0)
+            {
+                CheckSelectedNodesForPossibleActions();
+            }
+
+            dragging = false;
         }
 
         private void HandleMouseDrag(Vector3Int draggingNewMousePosition)
@@ -125,48 +140,12 @@ namespace Cursor
 
         private void HandleCursorMarkerPosition()
         {
-            Vector3Int mousePosition = Grid.Grid.Instance.GetGridPositionFromWorldPosition(Mouse3D.Instance.GetMouseWorldPosition());
+            mousePosition = Grid.Grid.Instance.GetGridPositionFromWorldPosition(Mouse3D.Instance.GetMouseWorldPosition());
 
-            //1. When left mouse button clicked (but not released)
-            if (leftMouseCursor.WasPerformedThisFrame())
+            if (CurrentMouseGridPosition != mousePosition && !dragging)
             {
                 CurrentMouseGridPosition = mousePosition;
-            }
-            else if (leftMouseDeleteTool.WasReleasedThisFrame())
-            {
-                Node node = Grid.Grid.Instance.GetCell(CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
-
-                deleteTool?.UseTool(node.Building);
-                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType(), resourceMarkers);
-                GatherResource();
-            }
-
-            if (dragging && leftMouseCursor.ReadValue<float>() == 0) //Released mouse button, stop dragging
-            {
-                cursorMarker.sizeDelta = new Vector2(1, 1);
-                dragging = false;
-                if(nodesSelected.Count > 0)
-                {
-                    CheckSelectedNodesForPossibleActions();
-                }
-            }
-
-            if (CurrentMouseGridPosition != mousePosition)
-            {
-                //2. While left mouse button held
-                if (leftMouseCursor.ReadValue<float>() == 1 && (CurrentMouseGridPosition - mousePosition).magnitude >= Grid.Grid.Instance.NodeSize / 2)
-                {
-                    dragging = true;
-                }
-
-                if(!dragging)
-                {
-                    CurrentMouseGridPosition = mousePosition;
-                    cursorMarker.position = new Vector3(CurrentMouseGridPosition.x - nodeOffset, cursorMarker.position.y, CurrentMouseGridPosition.z - nodeOffset);
-                    //Vector3 positionToMoveTo = new Vector3(CurrentMouseGridPosition.x, cursorMarker.position.y, CurrentMouseGridPosition.z);
-                    //cursorMarker.position = Vector3.MoveTowards(cursorMarker.position, positionToMoveTo, 350 * Time.deltaTime);
-
-                }
+                cursorMarker.position = new Vector3(CurrentMouseGridPosition.x - nodeOffset, cursorMarker.position.y, CurrentMouseGridPosition.z - nodeOffset);
             }
 
             if(dragging)
@@ -182,11 +161,9 @@ namespace Cursor
 
                 Node node = Grid.Grid.Instance.GetCell(nodePosition.x, nodePosition.y);
 
-                deleteTool?.UseTool(node.Building);
-                gatherResourcesTool?.UseTool(node.Resource, resourceToGather.GetType(), resourceMarkers);
+                deleteTool?.UseDeleteTool(node);
+                gatherResourcesTool?.UseResourceTool(node.Resource, resourceToGather.GetType(), onNewResourceSelected);
             }
-
-            GatherResource();
 
             nodesSelected.Clear();
         }
@@ -197,39 +174,20 @@ namespace Cursor
             HashSet<Person> idlePeople = populationManager.IdlePeople;
             Person[] prevIdlePeople = new Person[populationManager.IdlePeople.Count];
             populationManager.IdlePeople.CopyTo(prevIdlePeople);
+
             if (resourceToGather == null)
             {
                 return;
             }
 
-
-            if (resourceToGather.GetType() == typeof(ResourceTypes.Tree))
+            foreach (Person person in prevIdlePeople)
             {
-                foreach (Person person in prevIdlePeople)
+                if (idlePeople.Contains(person))
                 {
-                    if(idlePeople.Contains(person))
+                    Resource resourceToGather = ResourceGatheringManager.Instance.GetNextResourceToHarvest();
+                    if (resourceToGather != null)
                     {
-                        ResourceTypes.Tree treeToBeGathered = (ResourceTypes.Tree)ResourceGatheringManager.Instance.ChooseRadomResource(resourceToGather.GetType());
-
-                        if(treeToBeGathered != null)
-                        {
-                            person.NewGatherResourceBT(treeToBeGathered);
-                        }
-                    }
-                }
-            }
-            else if (resourceToGather.GetType() == typeof(Stone))
-            {
-                foreach (Person person in prevIdlePeople)
-                {
-                    if (idlePeople.Contains(person))
-                    {
-                        Stone stoneToBeGathered = (Stone)ResourceGatheringManager.Instance.ChooseRadomResource(resourceToGather.GetType());
-
-                        if (stoneToBeGathered)
-                        {
-                            person.NewGatherResourceBT(stoneToBeGathered);
-                        }
+                        person.NewGatherResourceBT(resourceToGather);
                     }
                 }
             }
@@ -239,23 +197,19 @@ namespace Cursor
         {
             deleteTool = null;
             gatherResourcesTool = null;
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out Color color);
             cursorMarkerImage.color = color;
 
-            rightMouse.performed -= OnClickCancel;
-            controls.Tools.Disable();
+            rightMouseCursor.performed -= OnClickCancel;
         }
 
         public void CreateDeleteTool()
         {
             deleteTool = new DeleteTool();
-            Color color;
-            ColorUtility.TryParseHtmlString(Colors.CursorMarkerDeleteColor, out color);
+            ColorUtility.TryParseHtmlString(Colors.CursorMarkerDeleteColor, out Color color);
             cursorMarkerImage.color = color;
 
-            rightMouse.performed += OnClickCancel;
-            controls.Tools.Enable();
+            rightMouseCursor.performed += OnClickCancel;
         }
 
         public void CreateGatherResourcesTool(Resource resource)
@@ -274,14 +228,14 @@ namespace Cursor
             }
             cursorMarkerImage.color = color;
 
-
-            rightMouse.performed += OnClickCancel;
-            controls.Tools.Enable();
+            rightMouseCursor.performed += OnClickCancel;
+            onNewResourceSelected += GatherResource;
         }
 
         private void OnClickCancel(InputAction.CallbackContext obj)
         {
             ResetDeleteTool();
+            onNewResourceSelected -= GatherResource;
         }
 
         private Vector2Int V3ToV2(Vector3Int vector)
@@ -305,14 +259,11 @@ namespace Cursor
         public void DisableCursorMarker()
         {
             cursorMarker.gameObject.SetActive(false);
-            Debug.Log("disabling");
-
         }
 
         public void EnableCursorMarker()
         {
             cursorMarker.gameObject.SetActive(true);
-            Debug.Log("enabling");
         }
     }
 }

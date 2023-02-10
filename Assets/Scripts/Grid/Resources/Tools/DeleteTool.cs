@@ -1,15 +1,16 @@
 using UnityEngine;
 using System;
+using Grid;
 
 namespace Tools
 {
-    public class DeleteTool : ITool
+    public class DeleteTool : Tool
     {
         public DeleteTool() { }
 
-        public void UseTool(GameObject building, Type type = null, GameObject[] resourceMarker = null)
+        public override void UseDeleteTool(Node node)
         {
-            if (building != null) UnityEngine.Object.Destroy(building);
+            node?.ClearBuilding();
         }
     }
 }

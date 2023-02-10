@@ -7,24 +7,34 @@ namespace Population
 {
     public class MoveToPosition : Task
     {
-        AIPath aiPath;
-        AIDestinationSetter aiDestinationSetter;
-
-        public MoveToPosition(AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath)
+        private AIPath aiPath;
+        private AIDestinationSetter aiDestinationSetter;
+        private Person person;
+        private bool firstRun;
+        public MoveToPosition(AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath, Person person)
         {
+            this.person = person;
             this.aiDestinationSetter = aiDestinationSetter;
             UpdateTargetPosition(position);
             this.aiPath = aiPath;
+            firstRun = true;
         }
 
         public override Result Run()
         {
-            if (!aiPath.reachedEndOfPath && !aiPath.reachedDestination)
+            if (!aiPath.reachedDestination)
             {
+                if (firstRun)
+                {
+                    person.PlayMovingAnimation();
+                    firstRun = false;
+                }
+                
                 return Result.Running;
             }
             else
             {
+                firstRun = true;
                 return Result.Success;
             }
         }

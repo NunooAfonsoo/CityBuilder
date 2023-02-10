@@ -9,14 +9,10 @@ namespace Population
     {
         public Idle(Person person, AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath)
         {
-            PopulationManager populationManager = PopulationManager.Instance;
-            populationManager.RemovePerson(person);
+            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath, person);
 
-            person.ChangePersonState(Person.PersonStates.Idling);
+            person.ChangeState(Person.PersonStates.Idling);
 
-            populationManager.RegisterPerson(person);
-
-            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath);
             this.children = new List<Task>()
             {
                 moveToPosition,

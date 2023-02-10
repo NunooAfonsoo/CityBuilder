@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Pathfinding;
@@ -10,27 +9,22 @@ namespace Population
     {
         public GatherResource(Person person, AIDestinationSetter aiDestinationSetter, Vector3 position, AIPath aiPath, Resource resourceToGather)
         {
-            PopulationManager populationManager = PopulationManager.Instance;
-            populationManager.RemovePerson(person);
+            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath, person);
 
-            if (resourceToGather.GetType() == typeof(ResourceTypes.Tree))
+            if (resourceToGather.GetType() == typeof(Stone) && (person.CurrentState != Person.PersonStates.MiningStone))
             {
-                person.ChangePersonState(Person.PersonStates.ChoppingTree);
+                person.ChangeState(Person.PersonStates.MiningStone);
             }
-            else if (resourceToGather.GetType() == typeof(Stone))
+            else if (resourceToGather.GetType() == typeof(ResourceTypes.Tree) && (person.CurrentState != Person.PersonStates.ChoppingTree))
             {
-                person.ChangePersonState(Person.PersonStates.MiningStone);
+                person.ChangeState(Person.PersonStates.ChoppingTree);
             }
 
-            populationManager.RegisterPerson(person);
-
-            MoveToPosition moveToPosition = new MoveToPosition(aiDestinationSetter, position, aiPath);
             this.children = new List<Task>()
             {
                 moveToPosition,
                 new HarvestResource(person, resourceToGather, moveToPosition)
             };
         }
-
     }
 }
