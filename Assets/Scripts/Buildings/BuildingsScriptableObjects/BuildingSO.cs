@@ -26,6 +26,7 @@ namespace Buildings
         public void CreateBuilding(Vector3 position, float buildingRotation = 0)
         {
             building = GameObject.Instantiate(buildingObj, position, Quaternion.Euler(0, buildingRotation, 0));
+            building.transform.localScale = Vector3.one * Grid.Grid.Instance.NodeSize;
             CursorManager.Instance.DisableCursorMarker();
         }
 
@@ -54,7 +55,7 @@ namespace Buildings
             building.transform.position = new Vector3(closestPosition.x, buildingObj.transform.position.y, closestPosition.y);
         }
 
-        public void MoveBuildingToPosition(Vector3Int position)
+        public void MoveBuildingToPosition(Vector3 position)
         {
             building.transform.position = new Vector3(position.x, buildingObj.transform.position.y, position.z);
         }

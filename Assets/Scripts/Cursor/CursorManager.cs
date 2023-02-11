@@ -18,10 +18,10 @@ namespace Cursor
         //Dragging
         [Header("Dragging")]
         [SerializeField] private RectTransform cursorMarker;
-        public Vector3Int CurrentMouseGridPosition{ get; private set; }
+        public Vector3 CurrentMouseGridPosition { get; private set; }
         private float nodeOffset;
         private bool dragging;
-        private HashSet<Vector2Int> nodesSelected;
+        private HashSet<Vector2> nodesSelected;
 
         //Cursor Marker and Tools
         private DeleteTool deleteTool;
@@ -35,19 +35,28 @@ namespace Cursor
         private InputAction rightMouseCursor;
         private InputAction leftMouseCursor;
 
-        private Vector3Int mousePosition;
-        private void Start()
-        {
+        private Vector3 mousePosition;
+        private float nodeSize;
 
+        private void Awake()
+        {
             Instance = this;
-            nodeOffset = (float)Grid.Grid.Instance.NodeSize / 2f;
-            nodesSelected = new HashSet<Vector2Int>();
+
+            nodesSelected = new HashSet<Vector2>();
             deleteTool = null;
             gatherResourcesTool = null;
             cursorMarkerImage = cursorMarker.GetComponent<Image>();
+        }
+
+        private void Start()
+        {
+            nodeOffset = (float)Grid.Grid.Instance.NodeSize / 2f;
 
             ColorUtility.TryParseHtmlString(Colors.CursorMarkerColor, out Color color);
             cursorMarkerImage.color = color;
+
+            nodeSize = Grid.Grid.Instance.NodeSize;
+            cursorMarker.sizeDelta = new Vector2(nodeSize, nodeSize);
         }
 
         private void OnEnable()
@@ -80,7 +89,7 @@ namespace Cursor
 
         private void DragEnd(InputAction.CallbackContext obj)
         {
-            cursorMarker.sizeDelta = new Vector2(1, 1);
+            cursorMarker.sizeDelta = new Vector2(nodeSize, nodeSize);
             if (nodesSelected.Count > 0)
             {
                 CheckSelectedNodesForPossibleActions();
@@ -89,58 +98,59 @@ namespace Cursor
             dragging = false;
         }
 
-        private void HandleMouseDrag(Vector3Int draggingNewMousePosition)
+        private void HandleMouseDrag(Vector3 draggingNewMousePosition)
         {
             nodesSelected.Clear();
 
-            Vector3Int positionDiff = draggingNewMousePosition - CurrentMouseGridPosition;
-            Vector2Int bottomLeft = GetBottomLeftNodePosition(V3ToV2(positionDiff));
+            Vector3 positionDiff = draggingNewMousePosition - CurrentMouseGridPosition;
+            Vector2 bottomLeft = GetBottomLeftNodePosition(V3ToV2(positionDiff));
 
 
             if (positionDiff.x >= 0 && positionDiff.z >= 0)
             {
                 cursorMarker.position = new Vector3(bottomLeft.x - nodeOffset, cursorMarker.position.y, bottomLeft.y - nodeOffset);
             }
-            else if (positionDiff.x <= -1 && positionDiff.z <= -1)
+            else if (positionDiff.x <= -nodeSize && positionDiff.z <= -nodeSize)
             {
                 cursorMarker.position = new Vector3(bottomLeft.x - nodeOffset, cursorMarker.position.y, bottomLeft.y - nodeOffset);
             }
-            else if (positionDiff.x <= -1)
+            else if (positionDiff.x <= -nodeSize)
             {
                 cursorMarker.position = new Vector3(bottomLeft.x - nodeOffset, cursorMarker.position.y, bottomLeft.y - nodeOffset);
             }
-            else if(positionDiff.z <= -1)
+            else if(positionDiff.z <= -nodeSize)
             {
                 cursorMarker.position = new Vector3(bottomLeft.x - nodeOffset, cursorMarker.position.y, bottomLeft.y - nodeOffset);
             }
-            cursorMarker.sizeDelta = new Vector2(Mathf.Abs(positionDiff.x) + transform.localScale.x, Mathf.Abs(positionDiff.z) + transform.localScale.x);
+            cursorMarker.sizeDelta = new Vector2(Mathf.Abs(positionDiff.x) + transform.localScale.x * nodeSize, Mathf.Abs(positionDiff.z) + transform.localScale.x * nodeSize);
             UpdateNodesSelected(V3ToV2(positionDiff), bottomLeft);
         }
 
-        private Vector2Int GetBottomLeftNodePosition(Vector2Int positionDiff)
+        private Vector2 GetBottomLeftNodePosition(Vector2 positionDiff)
         {
             if (positionDiff.x >= 0 && positionDiff.y >= 0)
             {
-                return new Vector2Int(CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
+                return new Vector2(CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
             }
-            else if (positionDiff.x <= -1 && positionDiff.y <= -1)
+            else if (positionDiff.x <= -nodeSize && positionDiff.y <= -nodeSize)
             {
-                return new Vector2Int(positionDiff.x + CurrentMouseGridPosition.x, positionDiff.y + CurrentMouseGridPosition.z);
+                return new Vector2(positionDiff.x + CurrentMouseGridPosition.x, positionDiff.y + CurrentMouseGridPosition.z);
             }
-            else if (positionDiff.x <= -1)
+            else if (positionDiff.x <= -nodeSize)
             {
-                return new Vector2Int(positionDiff.x + CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
+                return new Vector2(positionDiff.x + CurrentMouseGridPosition.x, CurrentMouseGridPosition.z);
             }
-            else if (positionDiff.y <= -1)
+            else if (positionDiff.y <= -nodeSize)
             {
-                return new Vector2Int(CurrentMouseGridPosition.x, positionDiff.y + CurrentMouseGridPosition.z);
+                return new Vector2(CurrentMouseGridPosition.x, positionDiff.y + CurrentMouseGridPosition.z);
             }
-            return Vector2Int.zero;
+            return Vector2.zero;
         }
 
         private void HandleCursorMarkerPosition()
         {
             mousePosition = Grid.Grid.Instance.GetGridPositionFromWorldPosition(Mouse3D.Instance.GetMouseWorldPosition());
+            mousePosition = nodeSize * mousePosition;
 
             if (CurrentMouseGridPosition != mousePosition && !dragging)
             {
@@ -156,10 +166,10 @@ namespace Cursor
 
         private void CheckSelectedNodesForPossibleActions()
         {
-            foreach(Vector2Int nodePosition in nodesSelected)
+            foreach(Vector2 nodeGridPosition in nodesSelected)
             {
 
-                Node node = Grid.Grid.Instance.GetCell(nodePosition.x, nodePosition.y);
+                Node node = Grid.Grid.Instance.GetCell((int)nodeGridPosition.x, (int)nodeGridPosition.y);
 
                 deleteTool?.UseDeleteTool(node);
                 gatherResourcesTool?.UseResourceTool(node.Resource, resourceToGather.GetType(), onNewResourceSelected);
@@ -238,20 +248,19 @@ namespace Cursor
             onNewResourceSelected -= GatherResource;
         }
 
-        private Vector2Int V3ToV2(Vector3Int vector)
+        private Vector2 V3ToV2(Vector3 vector)
         {
-            return new Vector2Int(vector.x, vector.z);
+            return new Vector2(vector.x, vector.z);
         }
 
-        private void UpdateNodesSelected(Vector2Int positionDiff, Vector2Int bottomLeft)
+        private void UpdateNodesSelected(Vector2 positionDiff, Vector2 bottomLeft)
         {
-            Vector2Int topRight = bottomLeft + new Vector2Int(Mathf.Abs(positionDiff.x), Mathf.Abs(positionDiff.y));
-
-            for (int x = bottomLeft.x; x <= topRight.x; x++)
+            Vector2 topRight = bottomLeft + new Vector2(Mathf.Abs(positionDiff.x), Mathf.Abs(positionDiff.y));
+            for (float x = bottomLeft.x; x <= topRight.x; x += nodeSize)
             {
-                for (int y = bottomLeft.y; y <= topRight.y; y++)
+                for (float y = bottomLeft.y; y <= topRight.y; y += nodeSize)
                 {
-                    nodesSelected.Add(new Vector2Int(x, y));
+                    nodesSelected.Add(new Vector2(x, y));
                 }
             }
         }

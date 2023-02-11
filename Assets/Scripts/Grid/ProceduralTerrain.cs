@@ -29,8 +29,11 @@ namespace Grid
 
         [SerializeField] private float waterLevel;
         [SerializeField] private float scale;
-        [SerializeField] private int size;
+        [SerializeField] private int gridSize;
+        [SerializeField] private float nodeSize;
 
+
+        [SerializeField] private int chunkSize;
         private List<GameObject> chunks;
         [SerializeField] private Material groundMaterial;
         [SerializeField] private bool drawWater;
@@ -39,33 +42,33 @@ namespace Grid
 
         private void Start()
         {
-            float[,] noiseMap = new float[size, size];
+            float[,] noiseMap = new float[gridSize, gridSize];
             (float xOffset, float yOffset) = (Random.Range(-10000f, 10000f), Random.Range(-10000f, 10000f));
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     float noiseValue = Mathf.PerlinNoise(x * scale + xOffset, y * scale + yOffset);
                     noiseMap[x, y] = noiseValue;
                 }
             }
 
-            float[,] falloffMap = new float[size, size];
-            for (int y = 0; y < size; y++)
+            float[,] falloffMap = new float[gridSize, gridSize];
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
-                    float xv = x / (float)size * 2 - 1;
-                    float yv = y / (float)size * 2 - 1;
+                    float xv = x / (float)gridSize * 2 - 1;
+                    float yv = y / (float)gridSize * 2 - 1;
                     float v = Mathf.Max(Mathf.Abs(xv), Mathf.Abs(yv));
                     falloffMap[x, y] = Mathf.Pow(v, 3f) / (Mathf.Pow(v, 3f) + Mathf.Pow(2.2f - 2.2f * v, 3f));
                 }
             }
 
-            Grid.Instance.CreateGrid(size, size, 1);
-            for (int y = 0; y < size; y++)
+            Grid.Instance.CreateGrid(gridSize, gridSize, nodeSize);
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     float noiseValue = noiseMap[x, y];
                     noiseValue -= falloffMap[x, y];
@@ -92,8 +95,7 @@ namespace Grid
 
         private void DrawTerrainMeshByChunks()
         {
-            int chunkSize = 100;
-            int nChunks = size % chunkSize == 0 ? (int)Mathf.Pow(size / chunkSize, 2) : (int)Mathf.Pow(Mathf.CeilToInt((float)size / (float)chunkSize), 2);
+            int nChunks = gridSize % chunkSize == 0 ? (int)Mathf.Pow(gridSize / chunkSize, 2) : (int)Mathf.Pow(Mathf.CeilToInt((float)gridSize / (float)chunkSize), 2);
             int chunkIndexY = 0, chunkIndexX = 0;
 
             while (chunkIndexY + 1 < Mathf.Sqrt(nChunks))
@@ -108,19 +110,22 @@ namespace Grid
                     {
                         for (int x = chunkIndexX * chunkSize; x < (chunkIndexX + 1) * chunkSize; x++)
                         {
-                            if (x < size && y < size)
+                            if (x < gridSize && y < gridSize)
                             {
-                                Node cell = Grid.Instance.GetCell(x, y);
-                                if (!cell.IsWater || drawWater)
+                                Node node = Grid.Instance.GetCell(x, y);
+                                if (!node.IsWater || drawWater)
                                 {
-                                    Vector3 a = new Vector3(x - .5f, 0, y + .5f);
-                                    Vector3 b = new Vector3(x + .5f, 0, y + .5f);
-                                    Vector3 c = new Vector3(x - .5f, 0, y - .5f);
-                                    Vector3 d = new Vector3(x + .5f, 0, y - .5f);
-                                    Vector2 uvA = new Vector2(x / (float)size, y / (float)size);
-                                    Vector2 uvB = new Vector2((x + 1) / (float)size, y / (float)size);
-                                    Vector2 uvC = new Vector2(x / (float)size, (y + 1) / (float)size);
-                                    Vector2 uvD = new Vector2((x + 1) / (float)size, (y + 1) / (float)size);
+                                    float xFloat = x * nodeSize;
+                                    float yFloat = y * nodeSize;
+
+                                    Vector3 a = new Vector3(xFloat - nodeSize / 2, 0, yFloat + nodeSize / 2);
+                                    Vector3 b = new Vector3(xFloat + nodeSize / 2, 0, yFloat + nodeSize / 2);
+                                    Vector3 c = new Vector3(xFloat - nodeSize / 2, 0, yFloat - nodeSize / 2);
+                                    Vector3 d = new Vector3(xFloat + nodeSize / 2, 0, yFloat - nodeSize / 2);
+                                    Vector2 uvA = new Vector2(x / (float)gridSize, y / (float)gridSize);
+                                    Vector2 uvB = new Vector2((x + nodeSize) / (float)gridSize, y / (float)gridSize);
+                                    Vector2 uvC = new Vector2(x / (float)gridSize, (y + nodeSize) / (float)gridSize);
+                                    Vector2 uvD = new Vector2((x + nodeSize) / (float)gridSize, (y + nodeSize) / (float)gridSize);
                                     Vector3[] v = new Vector3[] { a, b, c, b, d, c };
                                     Vector2[] uv = new Vector2[] { uvA, uvB, uvC, uvB, uvD, uvC };
                                     for (int k = 0; k < 6; k++)
@@ -160,9 +165,9 @@ namespace Grid
 
         private void ChooseGrassFertilizer()
         {
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater)
@@ -246,9 +251,9 @@ namespace Grid
             Mesh mesh = new Mesh();
             List<Vector3> vertices = new List<Vector3>();
             List<int> triangles = new List<int>();
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater)
@@ -270,7 +275,7 @@ namespace Grid
                                 }
                             }
                         }
-                        if (x < size - 1)
+                        if (x < gridSize - 1)
                         {
                             Node right = Grid.Instance.GetCell(x + 1, y);
                             if (right.IsWater)
@@ -304,7 +309,7 @@ namespace Grid
                                 }
                             }
                         }
-                        if (y < size - 1)
+                        if (y < gridSize - 1)
                         {
                             Node up = Grid.Instance.GetCell(x, y + 1);
                             if (up.IsWater)
@@ -343,27 +348,27 @@ namespace Grid
             int nChunks = (int)Mathf.Sqrt(chunks.Count);
             foreach (GameObject chunk in chunks)
             {
-                Texture2D texture = new Texture2D(size, size);
-                Color[] colorMap = new Color[size * size];
-                for (int y = 0; y < size; y++)
+                Texture2D texture = new Texture2D(gridSize, gridSize);
+                Color[] colorMap = new Color[gridSize * gridSize];
+                for (int y = 0; y < gridSize; y++)
                 {
-                    for (int x = 0; x < size; x++)
+                    for (int x = 0; x < gridSize; x++)
                     {
                         Node cell = Grid.Instance.GetCell(x, y);
                         if (cell.IsWater)
-                            colorMap[y * size + x] = waterColor;
+                            colorMap[y * gridSize + x] = waterColor;
                         else
                         {
                             switch (cell.GrassFertilityLevel)
                             {
                                 case Node.GrassFertility.Little:
-                                    colorMap[y * size + x] = grassColor;
+                                    colorMap[y * gridSize + x] = grassColor;
                                     break;
                                 case Node.GrassFertility.Medium:
-                                    colorMap[y * size + x] = fertilizedGrass1Color;
+                                    colorMap[y * gridSize + x] = fertilizedGrass1Color;
                                     break;
                                 case Node.GrassFertility.High:
-                                    colorMap[y * size + x] = fertilizedGrass2Color;
+                                    colorMap[y * gridSize + x] = fertilizedGrass2Color;
                                     break;
                             }
                         }
@@ -385,37 +390,37 @@ namespace Grid
             int nChunks = (int)Mathf.Sqrt(chunks.Count);
             foreach (GameObject chunk in chunks)
             {
-                Texture2D texture = new Texture2D(size, size);
-                Color[] colorMap = new Color[size * size];
-                for (int y = 0; y < size; y++)
+                Texture2D texture = new Texture2D(gridSize, gridSize);
+                Color[] colorMap = new Color[gridSize * gridSize];
+                for (int y = 0; y < gridSize; y++)
                 {
-                    for (int x = 0; x < size; x++)
+                    for (int x = 0; x < gridSize; x++)
                     {
                         if(Mathf.Abs(node.CellPosition.x - x) <= 1 && Mathf.Abs(node.CellPosition.y - y) <= 1)
                         {
                             Node cell = Grid.Instance.GetCell(x, y);
                             if (cell.IsWater)
-                                colorMap[y * size + x] = Color.red;
+                                colorMap[y * gridSize + x] = Color.red;
                             else
-                                colorMap[y * size + x] = grassColor;
+                                colorMap[y * gridSize + x] = grassColor;
                         }
                         else
                         {
                             Node cell = Grid.Instance.GetCell(x, y);
                             if (cell.IsWater)
-                                colorMap[y * size + x] = waterColor;
+                                colorMap[y * gridSize + x] = waterColor;
                             else
                             {
                                 switch (cell.GrassFertilityLevel)
                                 {
                                     case Node.GrassFertility.Little:
-                                        colorMap[y * size + x] = grassColor;
+                                        colorMap[y * gridSize + x] = grassColor;
                                         break;
                                     case Node.GrassFertility.Medium:
-                                        colorMap[y * size + x] = fertilizedGrass1Color;
+                                        colorMap[y * gridSize + x] = fertilizedGrass1Color;
                                         break;
                                     case Node.GrassFertility.High:
-                                        colorMap[y * size + x] = fertilizedGrass2Color;
+                                        colorMap[y * gridSize + x] = fertilizedGrass2Color;
                                         break;
                                 }
                             }
@@ -435,32 +440,32 @@ namespace Grid
 
         private void GenerateTrees()
         {
-            float[,] noiseMap = new float[size, size];
+            float[,] noiseMap = new float[gridSize, gridSize];
             (float xOffset, float yOffset) = (Random.Range(-10000f, 10000f), Random.Range(-10000f, 10000f));
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     float noiseValue = Mathf.PerlinNoise(x * treeNoiseScale + xOffset, y * treeNoiseScale + yOffset);
                     noiseMap[x, y] = noiseValue;
                 }
             }
 
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater)
                     {
                         float spawnProb = Random.Range(0f, treeDensity);
-                        if (noiseMap[x, y] < spawnProb)
+                        if (noiseMap[(int)x, (int)y] < spawnProb)
                         {
                             GameObject prefab = treePrefabs[Random.Range(0, treePrefabs.Length)];
                             GameObject tree = Instantiate(prefab, transform);
-                            tree.transform.position = new Vector3(x, 0, y);
+                            tree.transform.position = new Vector3(x * nodeSize, 0, y * nodeSize);
                             tree.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360f), 0);
-                            tree.transform.localScale = Vector3.one * Random.Range(0.8f, 1.2f);
+                            tree.transform.localScale = Vector3.one * Random.Range(0.8f, 1.2f) * nodeSize;
                             cell.TreeSpawned(tree);
                         }
                     }
@@ -471,9 +476,9 @@ namespace Grid
         private void GenerateMinerals()
         {
             // Stone Spawn
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater && cell.IsFree())
@@ -483,9 +488,9 @@ namespace Grid
                         {
                             GameObject prefab = stonePrefabs[Random.Range(0, stonePrefabs.Length)];
                             GameObject stone = Instantiate(prefab, transform);
-                            stone.transform.position = new Vector3(x, 0, y);
+                            stone.transform.position = new Vector3(x * nodeSize, 0, y * nodeSize);
                             stone.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360f), 0);
-                            stone.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f);
+                            stone.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f) * nodeSize;
                             cell.StoneSpawned(stone);
                             Grid.Instance.SetNodeWalkability(x, y, false);
                         }
@@ -494,9 +499,9 @@ namespace Grid
             }
 
             // Iron Spawn
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater && cell.IsFree())
@@ -506,9 +511,9 @@ namespace Grid
                         {
                             GameObject prefab = ironPrefabs[Random.Range(0, ironPrefabs.Length)];
                             GameObject iron = Instantiate(prefab, transform);
-                            iron.transform.position = new Vector3(x, 0, y);
+                            iron.transform.position = new Vector3(x * nodeSize, 0, y * nodeSize);
                             iron.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360f), 0);
-                            iron.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f);
+                            iron.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f) * nodeSize;
                             cell.IronSpawned(iron);
                             Grid.Instance.SetNodeWalkability(x, y, false);
                         }
@@ -517,9 +522,9 @@ namespace Grid
             }
 
             // Gold Spawn
-            for (int y = 0; y < size; y++)
+            for (int y = 0; y < gridSize; y++)
             {
-                for (int x = 0; x < size; x++)
+                for (int x = 0; x < gridSize; x++)
                 {
                     Node cell = Grid.Instance.GetCell(x, y);
                     if (!cell.IsWater && cell.IsFree())
@@ -529,9 +534,9 @@ namespace Grid
                         {
                             GameObject prefab = goldPrefabs[Random.Range(0, goldPrefabs.Length)];
                             GameObject gold = Instantiate(prefab, transform);
-                            gold.transform.position = new Vector3(x, 0, y);
+                            gold.transform.position = new Vector3(x * nodeSize, 0, y * nodeSize);
                             gold.transform.rotation = Quaternion.Euler(0, Random.Range(0, 360f), 0);
-                            gold.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f);
+                            gold.transform.localScale = Vector3.one * Random.Range(.8f, 1.2f) * nodeSize;
                             cell.GoldSpawned(gold);
                             Grid.Instance.SetNodeWalkability(x, y, false);
                         }

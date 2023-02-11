@@ -7998,7 +7998,9 @@ MonoBehaviour:
   fertilizedGrass2Color: {r: 0.015686275, g: 0.49019608, b: 0.011764706, a: 1}
   waterLevel: 0.25
   scale: 0.04
-  size: 203
+  gridSize: 203
+  nodeSize: 1
+  chunkSize: 20
   groundMaterial: {fileID: 2100000, guid: e78e1c4aa004bcd4094ae870f003a462, type: 2}
   drawWater: 1
   spawnTrees: 1
