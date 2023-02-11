@@ -27,7 +27,7 @@ namespace Grid
 
         private Node[,] grid;
         private int gridSize;
-        public int NodeSize { get; private set; }
+        public float NodeSize { get; private set; }
         public GridGraph gridGraph { get; private set; }
 
 
@@ -37,7 +37,7 @@ namespace Grid
 
         private Grid() { }
 
-        public void CreateGrid(int x, int y, int nodeSize)
+        public void CreateGrid(int x, int y, float nodeSize)
         {
             grid = new Node[x, y];
             gridSize = x;

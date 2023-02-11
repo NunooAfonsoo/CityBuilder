@@ -28,8 +28,9 @@ namespace Buildings
 
         public override bool IsPositionFree(Vector3Int position)
         {
-            bool isPositionFree = Grid.Grid.Instance.GetCell(position.x, position.z).CanBuildAtWaterPosition();
+            bool isPositionFree = Grid.Grid.Instance.GetCell((int)position.x, (int)position.z).CanBuildAtWaterPosition();
             SetBuildingMaterials(isPositionFree);
+            
 
             return isPositionFree;
         }

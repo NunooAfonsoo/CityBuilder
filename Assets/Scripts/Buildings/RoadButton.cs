@@ -15,16 +15,17 @@ namespace Buildings
         {
             while (!Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Vector3Int cursorPosition = CursorManager.Instance.CurrentMouseGridPosition;
+                
+                Vector3 cursorPosition = CursorManager.Instance.CurrentMouseGridPosition;
                 buildingSO.MoveBuildingToPosition(cursorPosition);
-                bool isPositionFree = buildingSO.IsPositionFree(cursorPosition);
-
+                bool isPositionFree = buildingSO.IsPositionFree(Grid.Grid.Instance.GetGridPositionFromWorldPosition(cursorPosition));
 
                 if (Mouse.current.leftButton.wasPressedThisFrame && isPositionFree)
                 {
                     StartCoroutine(PlaceRoads());//buildingSO.BuildingPlaced(CursorManager.Instance.CurrentMouseGridPosition.x, CursorManager.Instance.CurrentMouseGridPosition.z);
                     break;
                 }
+                
 
                 yield return null;
             }

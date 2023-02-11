@@ -28,9 +28,10 @@ namespace Buildings
         {
             while (!Mouse.current.rightButton.wasPressedThisFrame)
             {
-                Vector3Int cursorPosition = CursorManager.Instance.CurrentMouseGridPosition;
+                
+                Vector3 cursorPosition = CursorManager.Instance.CurrentMouseGridPosition;
                 buildingSO.MoveBuildingToPosition(cursorPosition);
-                bool isPositionFree = buildingSO.IsPositionFree(cursorPosition);
+                bool isPositionFree = buildingSO.IsPositionFree(Grid.Grid.Instance.GetGridPositionFromWorldPosition(cursorPosition));
 
                 if (Keyboard.current.rKey.wasPressedThisFrame)
                 {
@@ -39,9 +40,10 @@ namespace Buildings
 
                 if (Mouse.current.leftButton.wasPressedThisFrame && isPositionFree)
                 {
-                    buildingSO.BuildingPlaced(CursorManager.Instance.CurrentMouseGridPosition.x, CursorManager.Instance.CurrentMouseGridPosition.z);
+                    buildingSO.BuildingPlaced((int)CursorManager.Instance.CurrentMouseGridPosition.x, (int)CursorManager.Instance.CurrentMouseGridPosition.z);
                     buildingSO.CreateBuilding(Vector3.zero, buildingSO.BuildingRotation);
                 }
+                
                 yield return null;
             }
 
