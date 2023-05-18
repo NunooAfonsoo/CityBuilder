@@ -1,24 +1,16 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using Cinemachine;
+using Constants;
 
 namespace CameraNS
 {
     public class CameraController : MonoBehaviour
     {
-        private Controls controls;
-        private InputAction movement;
         private Transform cameraTransform;
-
 
         //HORIZONTAL
         [SerializeField] private AnimationCurve movementSpeedCurve;
         private float speed;
         [SerializeField] private float accelaration = 10f;
-
 
         //VERTICAL
         [SerializeField] private float minCamDistance = 5f;
@@ -35,44 +27,38 @@ namespace CameraNS
         //used to update the position of the cam base obj
         private Vector3 targetPosition;
 
-        private float zoomHeight;
-
-
         private Vector3 horizontalVelocity;
         private Vector3 lastPosition;
 
         //where dragging started
         Vector3 startDrag;
         private float distanceToCamera;
+
         private void Awake()
         {
-            controls = new Controls();
             cameraTransform = GetComponentInChildren<Camera>().transform;
 
             //SHOW CAM FOCUS POSITION
             GetComponent<MeshRenderer>().enabled = showCamFocus;
+
         }
 
         private void OnEnable()
         {
-            zoomHeight = cameraTransform.localPosition.y;
+            InputManager.Instance.OnCameraRotate += InputManager_RotateCamera;
+            InputManager.Instance.OnCameraZoom += InputManager_ZoomCamera;
+
             cameraTransform.LookAt(transform);
             lastPosition = transform.position;
-            movement = controls.Camera.Move;
-            controls.Camera.Rotate.performed += RotateCamera;
-            controls.Camera.Zoom.performed += ZoomCamera;
-
-            controls.Camera.Enable();
         }
 
         private void OnDisable()
         {
-            controls.Camera.Rotate.performed -= RotateCamera;
-            controls.Camera.Zoom.performed -= ZoomCamera;
-            controls.Camera.Disable();
+            InputManager.Instance.OnCameraRotate -= InputManager_RotateCamera;
+            InputManager.Instance.OnCameraZoom -= InputManager_ZoomCamera;
         }
 
-        private void FixedUpdate()
+        private void LateUpdate()
         {
             distanceToCamera = Vector3.Distance(cameraTransform.position, transform.position);
             GetKeyboardMovement();
@@ -89,10 +75,11 @@ namespace CameraNS
 
         private void GetKeyboardMovement()
         {
-            Vector3 inputValue = movement.ReadValue<Vector2>().x * GetCameraRight() + movement.ReadValue<Vector2>().y * GetCameraForward();
+            Vector2 moveAmount = InputManager.Instance.GetCameraMovementAmount();
+            Vector3 inputValue = moveAmount.x * GetCameraRight() + moveAmount.y * GetCameraForward();
             inputValue.Normalize();
 
-            if(inputValue.sqrMagnitude > 0.1f)
+            if (inputValue.sqrMagnitude > 0.1f)
             {
                 targetPosition += inputValue;
             }
@@ -123,14 +110,14 @@ namespace CameraNS
             targetPosition = Vector3.zero;
         }
 
-        private void RotateCamera(InputAction.CallbackContext obj)
+        private void InputManager_RotateCamera(object sender, InputManager.OnCameraRotateArgs e)
         {
-            if (controls.Camera.RotateButton.ReadValue<float>() != 1)
+            if (!InputManager.Instance.GetRotateButtonPressed())
             {
                 return;
             }
 
-            Vector2 value = obj.ReadValue<Vector2>();
+            Vector2 value = e.rotationAmount;
             transform.rotation = Quaternion.Euler(-value.y * rotationSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime + transform.rotation.eulerAngles.x, value.x * rotationSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime + transform.rotation.eulerAngles.y, 0f);
 
 
@@ -149,28 +136,28 @@ namespace CameraNS
             return angle;
         }
 
-
-        private void ZoomCamera(InputAction.CallbackContext obj)
+        private void InputManager_ZoomCamera(object sender, InputManager.OnCameraZoomArgs e)
         {
-            float value = -obj.ReadValue<Vector2>().y / 100f;
+            float zoomAmount = e.zoomAmount;
+
             float camDistance = Vector3.Distance(cameraTransform.position, transform.position);
 
             cameraTransform.LookAt(transform);
-            if (value < 0  && camDistance > minCamDistance)
+            if (zoomAmount < 0 && camDistance > minCamDistance)
             {
                 cameraTransform.position = Vector3.MoveTowards(cameraTransform.position, transform.position, zoomSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime);
             }
-            else if(value > 0 && camDistance < maxCamDistance)
+            else if (zoomAmount > 0 && camDistance < maxCamDistance)
             {
                 cameraTransform.position = Vector3.MoveTowards(cameraTransform.position, cameraTransform.position + (cameraTransform.position - transform.position), zoomSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime);
             }
-            
+
             Vector3 direction = (cameraTransform.position - transform.position).normalized;
-            if(camDistance < minCamDistance)
+            if (camDistance < minCamDistance)
             {
                 cameraTransform.position = Vector3.MoveTowards(cameraTransform.position, transform.position + direction * minCamDistance, zoomSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime);
             }
-            else if(camDistance > maxCamDistance)
+            else if (camDistance > maxCamDistance)
             {
                 cameraTransform.position = Vector3.MoveTowards(cameraTransform.position, transform.position + direction * maxCamDistance, zoomSpeedCurve.Evaluate(distanceToCamera) * Time.deltaTime);
             }

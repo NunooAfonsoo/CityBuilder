@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Cursor;
@@ -7,6 +5,7 @@ using Cursor;
 namespace Buildings
 {
     [CreateAssetMenu(fileName = "BuildingSO", menuName = "Building/NormalBuilding")]
+
     public class BuildingSO : ScriptableObject
     {
         public string BuildingName { get; private set; }
@@ -27,6 +26,7 @@ namespace Buildings
         {
             building = GameObject.Instantiate(buildingObj, position, Quaternion.Euler(0, buildingRotation, 0));
             building.transform.localScale = Vector3.one * Grid.Grid.Instance.NodeSize;
+
             CursorManager.Instance.DisableCursorMarker();
         }
 
@@ -63,12 +63,11 @@ namespace Buildings
         public virtual bool IsPositionFree(Vector3Int position)
         {
             bool isPositionFree = Grid.Grid.Instance.GetCell(position.x, position.z).CanBuildAtPosition();
-            SetBuildingMaterials(isPositionFree);
 
             return isPositionFree;
         }
 
-        protected void SetBuildingMaterials(bool isPositionFree)
+        public void SetBuildingMaterials(bool isPositionFree)
         {
             if (isPositionFree)
             {

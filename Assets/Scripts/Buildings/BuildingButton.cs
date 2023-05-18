@@ -2,55 +2,81 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using Cursor;
-using UnityEngine.InputSystem;
 using System;
+using Constants;
 
 namespace Buildings
 {
     public class BuildingButton : MonoBehaviour
     {
-        private Button button;
         [SerializeField] protected BuildingSO buildingSO;
+
+        private Button button;
+
+        private bool isPositionFree;
+        private bool previewingBuilding;
 
         private void Awake()
         {
+            isPositionFree = true;
+            previewingBuilding = false;
+
             button = GetComponent<Button>();
-            button.onClick.AddListener(delegate { SelectBuilding(0); } );
+            button.onClick.AddListener(SelectBuilding);
         }
 
-        private void SelectBuilding(float rotation)
+        private void Start()
         {
-            buildingSO.CreateBuilding(Vector3.zero, rotation);
-            StartCoroutine(PlaceBuilding());
+            InputManager.Instance.OnBuildingRotate += InputManager_OnBuilding_Rotate;
+            InputManager.Instance.OnBuildingPlaced += TryPlaceBuilding;
+            InputManager.Instance.OnBuildingPlacementCanceled += CancelBuildingPlacement;
         }
 
-        protected virtual IEnumerator PlaceBuilding()
+        private void SelectBuilding()
         {
-            while (!Mouse.current.rightButton.wasPressedThisFrame)
+            InputManager.Instance.EnableBuildingControls();
+
+            buildingSO.CreateBuilding(Vector3.zero);
+
+            previewingBuilding = true;
+            StartCoroutine(PreviewBuilding());
+        }
+
+        protected virtual IEnumerator PreviewBuilding()
+        {
+            while (previewingBuilding)
             {
-                
                 Vector3 cursorPosition = CursorManager.Instance.CurrentMouseGridPosition;
                 buildingSO.MoveBuildingToPosition(cursorPosition);
-                bool isPositionFree = buildingSO.IsPositionFree(Grid.Grid.Instance.GetGridPositionFromWorldPosition(cursorPosition));
+                isPositionFree = buildingSO.IsPositionFree(Grid.Grid.Instance.GetGridPositionFromWorldPosition(cursorPosition));
 
-                if (Keyboard.current.rKey.wasPressedThisFrame)
-                {
-                    buildingSO.RotateBuilding();
-                }
+                buildingSO.SetBuildingMaterials(isPositionFree);
 
-                if (Mouse.current.leftButton.wasPressedThisFrame && isPositionFree)
-                {
-                    buildingSO.BuildingPlaced((int)CursorManager.Instance.CurrentMouseGridPosition.x, (int)CursorManager.Instance.CurrentMouseGridPosition.z);
-                    buildingSO.CreateBuilding(Vector3.zero, buildingSO.BuildingRotation);
-                }
-                
                 yield return null;
             }
+        }
 
-            if (Mouse.current.rightButton.wasPressedThisFrame)
+        private void InputManager_OnBuilding_Rotate(object sender, EventArgs e)
+        {
+            buildingSO.RotateBuilding();
+        }
+
+        private void TryPlaceBuilding(object sender, EventArgs e)
+        {
+            if(isPositionFree)
             {
-                buildingSO.DestroyBuilding();
+                buildingSO.BuildingPlaced((int)CursorManager.Instance.CurrentMouseGridPosition.x, (int)CursorManager.Instance.CurrentMouseGridPosition.z);
+                buildingSO.CreateBuilding(Vector3.zero, buildingSO.BuildingRotation);
             }
+        }
+
+        private void CancelBuildingPlacement(object sender, EventArgs e)
+        {
+            InputManager.Instance.DisableBuildingControls();
+
+            previewingBuilding = false;
+
+            buildingSO.DestroyBuilding();
         }
     }
 }

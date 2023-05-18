@@ -11,7 +11,7 @@ namespace Buildings
 {
     public class RoadButton : BuildingButton
     {
-        protected override IEnumerator PlaceBuilding()
+        protected override IEnumerator PreviewBuilding()
         {
             while (!Mouse.current.rightButton.wasPressedThisFrame)
             {

@@ -62,6 +62,15 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""New action"",
+                    ""type"": ""Value"",
+                    ""id"": ""930fe596-3788-4672-aae9-8f5376cfc5a2"",
+                    ""expectedControlType"": ""Vector2"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true
                 }
             ],
             ""bindings"": [
@@ -122,17 +131,6 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
-                    ""id"": ""00cc9080-1939-48e6-ac86-39dd9b62a812"",
-                    ""path"": ""<Mouse>/delta"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": """",
-                    ""action"": ""Rotate"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""232a4f23-b143-4a93-ab94-ea2f6e0af120"",
                     ""path"": ""<Mouse>/scroll"",
                     ""interactions"": """",
@@ -150,6 +148,28 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""RotateButton"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2ff4c1f4-e18c-4cdd-bf91-c5ecfa02392c"",
+                    ""path"": """",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""New action"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""00cc9080-1939-48e6-ac86-39dd9b62a812"",
+                    ""path"": ""<Mouse>/delta"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -202,6 +222,74 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Buildings"",
+            ""id"": ""15934b79-6960-437a-9080-56a846a78f6b"",
+            ""actions"": [
+                {
+                    ""name"": ""Rotate"",
+                    ""type"": ""Button"",
+                    ""id"": ""153f2497-dc9b-438f-96ce-84b91561d101"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Place"",
+                    ""type"": ""Button"",
+                    ""id"": ""7a8172a2-eeb0-4e67-b2b0-3d1540ade76b"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Cancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""9dffd011-85ae-49da-8fa9-0fa35a70676e"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""99cfab3f-827a-4a78-90f9-091bc5f7914f"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rotate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""2ce2c013-666d-4e56-94cf-9aa5ebecd2ad"",
+                    ""path"": ""<Mouse>/leftButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Place"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""06c694b3-5e06-493e-bdab-de2be8851508"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -212,10 +300,16 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         m_Camera_Rotate = m_Camera.FindAction("Rotate", throwIfNotFound: true);
         m_Camera_Zoom = m_Camera.FindAction("Zoom", throwIfNotFound: true);
         m_Camera_RotateButton = m_Camera.FindAction("RotateButton", throwIfNotFound: true);
+        m_Camera_Newaction = m_Camera.FindAction("New action", throwIfNotFound: true);
         // Cursor
         m_Cursor = asset.FindActionMap("Cursor", throwIfNotFound: true);
         m_Cursor_LeftMouseButton = m_Cursor.FindAction("LeftMouseButton", throwIfNotFound: true);
         m_Cursor_RightMouseButton = m_Cursor.FindAction("RightMouseButton", throwIfNotFound: true);
+        // Buildings
+        m_Buildings = asset.FindActionMap("Buildings", throwIfNotFound: true);
+        m_Buildings_Rotate = m_Buildings.FindAction("Rotate", throwIfNotFound: true);
+        m_Buildings_Place = m_Buildings.FindAction("Place", throwIfNotFound: true);
+        m_Buildings_Cancel = m_Buildings.FindAction("Cancel", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -279,6 +373,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
     private readonly InputAction m_Camera_Rotate;
     private readonly InputAction m_Camera_Zoom;
     private readonly InputAction m_Camera_RotateButton;
+    private readonly InputAction m_Camera_Newaction;
     public struct CameraActions
     {
         private @Controls m_Wrapper;
@@ -287,6 +382,7 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         public InputAction @Rotate => m_Wrapper.m_Camera_Rotate;
         public InputAction @Zoom => m_Wrapper.m_Camera_Zoom;
         public InputAction @RotateButton => m_Wrapper.m_Camera_RotateButton;
+        public InputAction @Newaction => m_Wrapper.m_Camera_Newaction;
         public InputActionMap Get() { return m_Wrapper.m_Camera; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -308,6 +404,9 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                 @RotateButton.started -= m_Wrapper.m_CameraActionsCallbackInterface.OnRotateButton;
                 @RotateButton.performed -= m_Wrapper.m_CameraActionsCallbackInterface.OnRotateButton;
                 @RotateButton.canceled -= m_Wrapper.m_CameraActionsCallbackInterface.OnRotateButton;
+                @Newaction.started -= m_Wrapper.m_CameraActionsCallbackInterface.OnNewaction;
+                @Newaction.performed -= m_Wrapper.m_CameraActionsCallbackInterface.OnNewaction;
+                @Newaction.canceled -= m_Wrapper.m_CameraActionsCallbackInterface.OnNewaction;
             }
             m_Wrapper.m_CameraActionsCallbackInterface = instance;
             if (instance != null)
@@ -324,6 +423,9 @@ public partial class @Controls : IInputActionCollection2, IDisposable
                 @RotateButton.started += instance.OnRotateButton;
                 @RotateButton.performed += instance.OnRotateButton;
                 @RotateButton.canceled += instance.OnRotateButton;
+                @Newaction.started += instance.OnNewaction;
+                @Newaction.performed += instance.OnNewaction;
+                @Newaction.canceled += instance.OnNewaction;
             }
         }
     }
@@ -369,16 +471,72 @@ public partial class @Controls : IInputActionCollection2, IDisposable
         }
     }
     public CursorActions @Cursor => new CursorActions(this);
+
+    // Buildings
+    private readonly InputActionMap m_Buildings;
+    private IBuildingsActions m_BuildingsActionsCallbackInterface;
+    private readonly InputAction m_Buildings_Rotate;
+    private readonly InputAction m_Buildings_Place;
+    private readonly InputAction m_Buildings_Cancel;
+    public struct BuildingsActions
+    {
+        private @Controls m_Wrapper;
+        public BuildingsActions(@Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Rotate => m_Wrapper.m_Buildings_Rotate;
+        public InputAction @Place => m_Wrapper.m_Buildings_Place;
+        public InputAction @Cancel => m_Wrapper.m_Buildings_Cancel;
+        public InputActionMap Get() { return m_Wrapper.m_Buildings; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(BuildingsActions set) { return set.Get(); }
+        public void SetCallbacks(IBuildingsActions instance)
+        {
+            if (m_Wrapper.m_BuildingsActionsCallbackInterface != null)
+            {
+                @Rotate.started -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnRotate;
+                @Rotate.performed -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnRotate;
+                @Rotate.canceled -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnRotate;
+                @Place.started -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnPlace;
+                @Place.performed -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnPlace;
+                @Place.canceled -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnPlace;
+                @Cancel.started -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnCancel;
+                @Cancel.performed -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnCancel;
+                @Cancel.canceled -= m_Wrapper.m_BuildingsActionsCallbackInterface.OnCancel;
+            }
+            m_Wrapper.m_BuildingsActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @Rotate.started += instance.OnRotate;
+                @Rotate.performed += instance.OnRotate;
+                @Rotate.canceled += instance.OnRotate;
+                @Place.started += instance.OnPlace;
+                @Place.performed += instance.OnPlace;
+                @Place.canceled += instance.OnPlace;
+                @Cancel.started += instance.OnCancel;
+                @Cancel.performed += instance.OnCancel;
+                @Cancel.canceled += instance.OnCancel;
+            }
+        }
+    }
+    public BuildingsActions @Buildings => new BuildingsActions(this);
     public interface ICameraActions
     {
         void OnMove(InputAction.CallbackContext context);
         void OnRotate(InputAction.CallbackContext context);
         void OnZoom(InputAction.CallbackContext context);
         void OnRotateButton(InputAction.CallbackContext context);
+        void OnNewaction(InputAction.CallbackContext context);
     }
     public interface ICursorActions
     {
         void OnLeftMouseButton(InputAction.CallbackContext context);
         void OnRightMouseButton(InputAction.CallbackContext context);
+    }
+    public interface IBuildingsActions
+    {
+        void OnRotate(InputAction.CallbackContext context);
+        void OnPlace(InputAction.CallbackContext context);
+        void OnCancel(InputAction.CallbackContext context);
     }
 }

@@ -213,9 +213,9 @@ namespace Grid
         {
             Node[] neighbourCells = { Grid.Instance.GetCell(x, y + 1), Grid.Instance.GetCell(x + 1, y), Grid.Instance.GetCell(x, y - 1), Grid.Instance.GetCell(x - 1, y) };
 
-            foreach (Node cell in neighbourCells)
+            foreach (Node node in neighbourCells)
             {
-                if (cell.GrassFertilityLevel == Node.GrassFertility.Little)
+                if (node.GrassFertilityLevel == Node.GrassFertility.Little)
                 {
                     float fertilityProb = Random.Range(0.0f, 1.0f);
                     switch (grassFertilityLevel)
@@ -223,22 +223,22 @@ namespace Grid
                         case Node.GrassFertility.Medium:
                             if (fertilityProb < 0.17f)
                             {
-                                cell.SetFertilityLevel(Node.GrassFertility.Medium);
+                                node.SetFertilityLevel(Node.GrassFertility.Medium);
                             }
                             else if (fertilityProb < 0.28f)
                             {
-                                cell.SetFertilityLevel(Node.GrassFertility.High);
+                                node.SetFertilityLevel(Node.GrassFertility.High);
                             }
                             break;
 
                         case Node.GrassFertility.High:
                             if (fertilityProb < 0.24f)
                             {
-                                cell.SetFertilityLevel(Node.GrassFertility.Medium);
+                                node.SetFertilityLevel(Node.GrassFertility.Medium);
                             }
                             else if (fertilityProb < 0.55f)
                             {
-                                cell.SetFertilityLevel(Node.GrassFertility.High);
+                                node.SetFertilityLevel(Node.GrassFertility.High);
                             }
                             break;
                     }

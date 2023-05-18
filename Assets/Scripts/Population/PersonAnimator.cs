@@ -30,8 +30,6 @@ namespace Population
 
         private void ChangeAnimation(Person.PersonStates state)
         {
-            Debug.Log("Animation: " + state);
-
             switch (state)
             {
                 case Person.PersonStates.Idling:
@@ -46,8 +44,6 @@ namespace Population
 
         private void Person_OnMoving(object sender, EventArgs e)
         {
-            Debug.Log("Animation: Moving");
-
             animator.SetTrigger(AnimationStrings.MOVING);
         }
     }
